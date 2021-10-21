@@ -32,22 +32,12 @@ def derive_docname(doc: Document) -> DocName:
     return DocName(utils.get_attr_filename(doc, ""), doc.mime_type)
 
 
-async def send_msg(inpt: Union[str, Document, TypeInputFile], recipient: str):
-    """
-    Sends a message to Sticker bot
-
-    :param inpt: The object to send
-    :return: None
-    """
-    if isinstance(inpt, str):
-        await gvars.client.send_message(recipient, inpt)
-    else:
-        await gvars.client.send_file(recipient, inpt)
-
-
 async def send_sb(inpt: Union[str, Document, TypeInputFile]):
     # TODO Docstring
-    await send_msg(inpt, gvars.STICKERBOT)
+    if isinstance(inpt, str):
+        await gvars.client.send_message(entity=gvars.STICKERBOT, message=inpt)
+    else:
+        await gvars.client.send_file(entity=gvars.STICKERBOT, file=inpt, force_document=True)
 
 
 async def upload_file(path: str) -> TypeInputFile:
