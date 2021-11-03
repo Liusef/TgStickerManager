@@ -6,8 +6,7 @@ from telethon.tl.types import Document, InputDocumentFileLocation, InputStickerS
 from telethon.tl.types.messages import StickerSet
 from telethon.tl.functions.messages import GetStickerSetRequest
 
-import gvars
-import utils
+from src import gvars, utils
 
 
 class DocName:

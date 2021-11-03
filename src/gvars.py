@@ -2,9 +2,9 @@ import os
 
 from telethon import TelegramClient as tgclient
 
-import apikeys
+from src import apikeys
 import utils
-from auth import SignInState
+from src.Tg.auth import SignInState
 
 # API Keys for Telegram Application
 # apikeys.py not added to this repository for safety

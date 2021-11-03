@@ -1,16 +1,9 @@
 import asyncio
-import os
 
-import telethon
-from telethon import TelegramClient as tgclient
 import telethon.tl.types as tg
-import cache
-import stickers
-from stickers import TgStickerPack
-import tgapi
-from auth import SignInState
-import gvars
-import auth
+from src.Tg.auth import SignInState
+from src import gvars
+from src.Tg import auth, tgapi
 
 
 async def main():

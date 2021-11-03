@@ -5,10 +5,9 @@ from telethon.tl.types import Document, DocumentAttributeImageSize, StickerSet, 
     DocumentAttributeFilename, InputDocumentFileLocation, InputStickerSetThumb, InputStickerSetShortName, PhotoSize
 from telethon.tl.types.messages import StickerSet as ParentSet
 
-import cache
-import gvars
+from src import gvars, utils
 import tgapi
-import utils
+import jsonpickle
 
 
 class TgSticker:
@@ -100,7 +99,7 @@ class TgStickerPack:
         self.thumb = npack.thumb
         self.stickers = npack.thumb
         await self.download_thumb()
-        cache.serialize_pack(self)
+        serialize_pack(self)
 
     async def update_all(self):
         await self.update_meta()
@@ -135,10 +134,27 @@ async def get_pack(sn: str, force_get_new: bool = False, force_download_stickers
         tgpack: TgStickerPack = cache.deserialize_pack(sn)
         await tgpack.download_stickers()
         return tgpack
-    if cache.check_pack_saved(sn) and not force_get_new:
-        return cache.deserialize_pack(sn)
+    if check_pack_saved(sn) and not force_get_new:
+        return deserialize_pack(sn)
     sset: StickerSet = await tgapi.get_stickerset(sn)
     tgpack: TgStickerPack = generate(sset)
-    cache.serialize_pack(tgpack)
+    serialize_pack(tgpack)
     await tgpack.download_stickers()
     return tgpack
+
+def serialize_pack(pack: TgStickerPack):
+    # TODO Docstring
+    jsonpickle.set_encoder_options('json', indent=4)
+    ser: str = jsonpickle.encode(pack, unpicklable=True, keys=True)
+    utils.write_txt(ser, gvars.CACHEPATH + pack.sn + os.sep, pack.sn, 'json')
+
+
+def check_pack_saved(sn: str) -> bool:
+    # TODO Docstring
+    return utils.check_file(gvars.CACHEPATH + sn + os.sep + sn + '.json')
+
+
+def deserialize_pack(sn: str) -> TgStickerPack:
+    # TODO Docstring
+    ser: str = utils.read_txt(gvars.CACHEPATH + sn + os.sep + sn + '.json')
+    return jsonpickle.decode(ser, keys=True, classes=TgStickerPack)

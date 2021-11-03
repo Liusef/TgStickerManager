@@ -26,12 +26,10 @@ class SignInState(Enum):
 
 
 import telethon
-from telethon import TelegramClient as tgclient
 from telethon.errors import FloodWaitError
 from telethon.errors import SessionPasswordNeededError
 from telethon.errors import PhoneCodeInvalidError
-import gvars
-import utils
+from src import gvars, utils
 
 
 async def signin_cli():
