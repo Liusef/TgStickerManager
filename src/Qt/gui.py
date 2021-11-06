@@ -7,7 +7,6 @@ from PySide6.QtWidgets import QApplication, QWidget, QMainWindow, QStackedWidget
 from PySide6.QtGui import QPixmap, QIcon, QFont
 from PySide6.QtCore import Qt
 import importlib.resources as ilr
-from pages import login
 import phonenumbers
 
 
@@ -38,16 +37,18 @@ class MainWindow(QMainWindow):
         super().__init__()
 
 
+from src.Qt.pages import login
+
+
 def main():
-    app = QApplication(sys.argv)
-    app.setStyleSheet(ilr.read_text(assets, 'style.qss'))
+    QApplication.instance().setStyleSheet(ilr.read_text(assets, 'style.qss'))
     widget = MainWindow()
     widget.setWindowIcon(QIcon(get_pixmap(assets, "app.png")))
     widget.setWindowTitle("PLACEHOLDER")
     widget.setCentralWidget(login.TgLoginWidget())
     widget.show()
     widget.resize(900, 600)
-    exit(app.exec())
+    exit(QApplication.instance().exec())
 
 
 if __name__ == '__main__':

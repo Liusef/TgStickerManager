@@ -1,8 +1,9 @@
 import asyncio
+import copy
 import os
 from typing import Union
 
-from telethon.tl.types import Document, InputDocumentFileLocation, InputStickerSetShortName, TypeInputFile
+from telethon.tl.types import Document, InputDocumentFileLocation, InputStickerSetShortName, TypeInputFile, Message
 from telethon.tl.types.messages import StickerSet
 from telethon.tl.functions.messages import GetStickerSetRequest
 
@@ -119,3 +120,25 @@ async def get_stickerset(short: str) -> StickerSet:
     """
     query: InputStickerSetShortName = InputStickerSetShortName(short_name=short)
     return await gvars.client(GetStickerSetRequest(query))
+
+
+async def get_owned_stickerset_shortnames() -> list[str]:
+    # TODO Docstring
+    # This method is really sketchy and it might not work if you have a ton of sticker packs but its the best
+    # way to do it that I have right now
+    delay: float = 0.1
+    await send_sb("/cancel")
+    await send_sb("/addsticker")
+    while True:
+        await asyncio.sleep(delay)
+        msg: Message = await gvars.client.iter_messages(entity='Stickers').__anext__()
+        if msg.message == "Choose the sticker pack you're interested in.":
+            break
+    sets: list[str] = []
+    if msg.reply_markup is None or msg.reply_markup.rows is None or len(msg.reply_markup.rows) == 0:
+        return sets
+    for r in msg.reply_markup.rows:
+        for b in r.buttons:
+            sets.append(b.text)
+    await send_sb("/cancel")
+    return sets

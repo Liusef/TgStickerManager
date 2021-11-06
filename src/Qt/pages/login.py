@@ -1,10 +1,16 @@
-from src import assets
+import asyncio
+
+from qasync import asyncSlot, QThreadExecutor
+
+import src
+from src import assets, gvars
 from PySide6.QtWidgets import QWidget, QStackedWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton
 from PySide6.QtGui import QPixmap, QIcon, QFont
 from PySide6.QtCore import Qt
 import phonenumbers
 
 from src.Qt.gui import generate_font, nest_widget, get_pixmap
+from src.Tg import auth
 
 
 class TgLoginWidget(QWidget):
@@ -12,6 +18,7 @@ class TgLoginWidget(QWidget):
         def __init__(self):
             super().__init__()
             self.insertWidget(0, self.page1())
+            self.pn: str = ""
 
         def page1(self) -> QWidget:
             layout = QVBoxLayout()
@@ -36,7 +43,7 @@ class TgLoginWidget(QWidget):
             phone.setFont(generate_font(phone, 14, QFont.DemiBold))
             phone.setAlignment(Qt.AlignHCenter)
             phone.setMaximumWidth(300)
-            phone.returnPressed.connect(lambda: self.next_page(phone.text()))
+
             layout.addWidget(nest_widget(phone))
 
             cont = QPushButton()
@@ -44,8 +51,15 @@ class TgLoginWidget(QWidget):
             cont.setFont(generate_font(cont, 12))
             cont.setFixedWidth(150)
             cont.setEnabled(False)
-            phone.textChanged.connect(lambda: cont.setEnabled(self.is_valid_phone(phone.text())))
-            cont.clicked.connect(lambda: self.next_page(phone.text()))
+
+            def phone_textchanged():
+                self.pn = phone.text()
+                cont.setEnabled(self.is_valid_phone(self.pn))
+            phone.textChanged.connect(phone_textchanged)
+
+            cont.clicked.connect(self.next_page_nparams)
+            phone.returnPressed.connect(self.next_page_nparams)
+
             layout.addWidget(nest_widget(cont))
 
             return widget
@@ -71,7 +85,21 @@ class TgLoginWidget(QWidget):
 
             return widget
 
-        def next_page(self, phone: str):
+        def sync_connect(self):
+            asyncio.create_task(gvars.client.connect())
+
+        @asyncSlot()
+        async def next_page_nparams(self):
+            await self.next_page(self.pn)
+
+        async def next_page(self, phone: str):
+            with QThreadExecutor(1) as qte:
+                if not gvars.client.is_connected():
+                    await gvars.client.connect()
+                    gvars.state = gvars.state.CONNECTED_NSI
+
+                await auth.signin_handler_phone(phone)
+
             while self.count() > 1: self.removeWidget(self.widget(1))
             phone = phonenumbers.format_number(phonenumbers.parse('+' + phone),
                                                phonenumbers.PhoneNumberFormat.INTERNATIONAL)

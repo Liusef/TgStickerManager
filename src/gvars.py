@@ -2,8 +2,7 @@ import os
 
 from telethon import TelegramClient as tgclient
 
-from src import apikeys
-import utils
+from src import apikeys, utils
 from src.Tg.auth import SignInState
 
 # API Keys for Telegram Application
@@ -29,7 +28,9 @@ MIME: dict[str, str] = {
 STICKERBOT: str = 'Stickers'  # Sticker bot   : @Stickers
 
 # Telegram client object to make requests and receive data
-client: tgclient = tgclient( SESSIONPATH + 'user', api_id, api_hash)
+def get_client(name: str) -> tgclient:
+    return tgclient(SESSIONPATH + name, api_id, api_hash)
+client: tgclient = get_client('user')
 
 # SignInState object to track the state of the telegram client
 state: SignInState = SignInState.NULL
