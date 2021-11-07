@@ -1,6 +1,6 @@
 import asyncio
 
-from qasync import asyncSlot, QThreadExecutor
+from qasync import asyncSlot
 
 import src
 from src import assets, gvars
@@ -85,20 +85,21 @@ class TgLoginWidget(QWidget):
 
             return widget
 
-        def sync_connect(self):
-            asyncio.create_task(gvars.client.connect())
-
         @asyncSlot()
         async def next_page_nparams(self):
+            print('src.Qt.pages.login.next_page_nparams called, coroutine added to the event loop')
             await self.next_page(self.pn)
 
         async def next_page(self, phone: str):
-            with QThreadExecutor(1) as qte:
-                if not gvars.client.is_connected():
-                    await gvars.client.connect()
-                    gvars.state = gvars.state.CONNECTED_NSI
+            if not gvars.client.is_connected():
+                print('tgclient is not connected, connecting...')
+                await gvars.client.connect()
+                print('tgclient connected!')
+                gvars.state = gvars.state.CONNECTED_NSI
 
-                await auth.signin_handler_phone(phone)
+            print('creating signin_handler coroutine')
+            await auth.signin_handler_phone(phone)
+            print('successfully signed in')
 
             while self.count() > 1: self.removeWidget(self.widget(1))
             phone = phonenumbers.format_number(phonenumbers.parse('+' + phone),

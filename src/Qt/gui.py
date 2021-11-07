@@ -1,10 +1,13 @@
+import asyncio
 import sys
 from types import ModuleType
+
+from qasync import QEventLoop
 
 from src import assets
 from PySide6.QtWidgets import QApplication, QWidget, QMainWindow, QStackedWidget, QVBoxLayout, QLabel, QLineEdit, \
     QPushButton
-from PySide6.QtGui import QPixmap, QIcon, QFont
+from PySide6.QtGui import QPixmap, QIcon, QFont, QGuiApplication
 from PySide6.QtCore import Qt
 import importlib.resources as ilr
 import phonenumbers
@@ -41,14 +44,22 @@ from src.Qt.pages import login
 
 
 def main():
-    QApplication.instance().setStyleSheet(ilr.read_text(assets, 'style.qss'))
+    app = QApplication([])
+    # appp = QGuiApplication([])
+    # app.setStyleSheet(ilr.read_text(assets, 'style.qss'))
     widget = MainWindow()
     widget.setWindowIcon(QIcon(get_pixmap(assets, "app.png")))
     widget.setWindowTitle("PLACEHOLDER")
     widget.setCentralWidget(login.TgLoginWidget())
-    widget.show()
     widget.resize(900, 600)
-    exit(QApplication.instance().exec())
+
+    with QEventLoop(app) as loop:
+        widget.show()
+        asyncio.set_event_loop(loop)
+        loop.run_forever()
+
+    print('coroutine has ended')
+
 
 
 if __name__ == '__main__':
