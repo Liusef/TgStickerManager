@@ -4,7 +4,7 @@ from qasync import asyncSlot
 
 import src
 from src import assets, gvars
-from PySide6.QtWidgets import QWidget, QStackedWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton
+from PySide6.QtWidgets import QWidget, QStackedWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QHBoxLayout
 from PySide6.QtGui import QPixmap, QIcon, QFont
 from PySide6.QtCore import Qt
 import phonenumbers
@@ -19,6 +19,7 @@ class TgLoginWidget(QWidget):
             super().__init__()
             self.insertWidget(0, self.page1())
             self.pn: str = ""
+            self.code: str = ""
 
         def page1(self) -> QWidget:
             layout = QVBoxLayout()
@@ -52,9 +53,17 @@ class TgLoginWidget(QWidget):
             cont.setFixedWidth(150)
             cont.setEnabled(False)
 
+            def is_valid_phone(phone: str) -> bool:
+                try:
+                    return phonenumbers.is_valid_number(phonenumbers.parse('+' + phone))
+                except phonenumbers.phonenumberutil.NumberParseException as e:
+                    print(e)
+                    return False
+
             def phone_textchanged():
                 self.pn = phone.text()
-                cont.setEnabled(self.is_valid_phone(self.pn))
+                cont.setEnabled(is_valid_phone(self.pn))
+
             phone.textChanged.connect(phone_textchanged)
 
             cont.clicked.connect(self.next_page_nparams)
@@ -64,13 +73,13 @@ class TgLoginWidget(QWidget):
 
             return widget
 
-        def page2(self, phone: str) -> QWidget:
+        def page2(self, code: str) -> QWidget:
             layout = QVBoxLayout()
             widget = QWidget()
             widget.setLayout(layout)
 
             title = QLabel()
-            title.setText(phone)
+            title.setText(code)
             title.setFont(generate_font(title, 30, QFont.Bold))
             title.setAlignment(Qt.AlignHCenter)
             layout.addWidget(title)
@@ -81,9 +90,67 @@ class TgLoginWidget(QWidget):
             desc.setAlignment(Qt.AlignHCenter)
             layout.addWidget(desc)
 
+            broke = QWidget()
+            broke.setLayout(QHBoxLayout())
+
+            ncode = QPushButton()
+            bfont = generate_font(ncode, 12)
+            ncode.setFont(bfont)
+            ncode.setText("New code?")
+            ncode.setFixedWidth(150)
+            ncode.clicked.connect(self.get_new_code)
+            broke.layout().addWidget(nest_widget(ncode))
+
+            wrongphone = QPushButton()
+            wrongphone.setFont(bfont)
+            wrongphone.setText("Wrong phone?")
+            wrongphone.setFixedWidth(150)
+            wrongphone.clicked.connect(lambda: print('this does nothing right now oops'))
+            broke.layout().addWidget(nest_widget(wrongphone))
+            layout.addWidget(broke)
+
+            code = QLineEdit()
+            code.setFont(generate_font(code, 14, QFont.DemiBold))
+            code.setAlignment(Qt.AlignHCenter)
+            code.setMaximumWidth(300)
+
+            layout.addWidget(nest_widget(code))
+
+            cont = QPushButton()
+            cont.setText("Next")
+            cont.setFont(generate_font(cont, 12))
+            cont.setFixedWidth(150)
+            cont.setEnabled(False)
+            cont.clicked.connect(self.shit)
+            code.returnPressed.connect(self.shit)
+
+            layout.addWidget(nest_widget(cont))
+
+            def phone_textchanged():
+                self.code = code.text()
+                cont.setEnabled(len(self.code) == 5)
+
+            code.textEdited.connect(phone_textchanged)
+
             layout.addStretch()
 
             return widget
+
+        @asyncSlot()
+        async def get_new_code(self):
+            await auth.signin_handler_request_new_code(self.pn)
+            print('new code request')
+
+        @asyncSlot()
+        async def shit(self):
+            print('sending signin code for auth')
+            print(f'phone: {self.pn}\ncode: {self.code}')
+            await auth.signin_handler_code(self.pn, self.code)
+            urmom = await gvars.client.is_user_authorized()
+            print(f'user is authorized: {urmom}')
+            if urmom:
+                self.insertWidget(2, QWidget())
+                self.setCurrentIndex(2)
 
         @asyncSlot()
         async def next_page_nparams(self):
@@ -99,20 +166,13 @@ class TgLoginWidget(QWidget):
 
             print('creating signin_handler coroutine')
             await auth.signin_handler_phone(phone)
-            print('successfully signed in')
+            print('sent sign-in code if one has not been sent and been unused recently')
 
             while self.count() > 1: self.removeWidget(self.widget(1))
             phone = phonenumbers.format_number(phonenumbers.parse('+' + phone),
                                                phonenumbers.PhoneNumberFormat.INTERNATIONAL)
             self.insertWidget(1, self.page2(phone))
             self.setCurrentIndex(1)
-
-        def is_valid_phone(self, phone: str) -> bool:
-            try: return phonenumbers.is_valid_number(phonenumbers.parse('+' + phone))
-            except phonenumbers.phonenumberutil.NumberParseException as e:
-                print(e)
-                return False
-
 
     def __init__(self):
         super().__init__()

@@ -44,24 +44,24 @@ async def signin_cli():
         gvars.state = SignInState.SIGNED_IN
         return  # Exits if Signin state is 2 - SIGNED_IN
 
-    next_input: str = input("Phone number: ")  # Reading phone number from the user (login id)
-    await signin_handler_phone(next_input)  # Pass input to relevant handler
+    phone: str = input("Phone number: ")  # Reading phone number from the user (login id)
+    await signin_handler_phone(phone)  # Pass input to relevant handler
     if gvars.state == SignInState.SIGNED_IN:
         print("Successfully Signed in!")
         return  # Exits if Signin state is 2 - SIGNED_IN
     if gvars.state != SignInState.AWAITING_CODE:
         raise Exception("signin_cli expected state SIGNED_IN or AWAITING_CODE")
 
-    next_input = input("Code: ")  # User enters code they received from @Telegram
-    await signin_handler_code(next_input)  # Pass input to relevant handler
+    code = input("Code: ")  # User enters code they received from @Telegram
+    await signin_handler_code(phone, code)  # Pass input to relevant handler
     if gvars.state == SignInState.SIGNED_IN:
         print("Successfully Signed in!")
         return  # Exits if Signin state is 2 - SIGNED_IN
     if gvars.state != SignInState.AWAITING_2FA:
         raise Exception("Signin_cli expected state SIGNED_IN or AWAITING_2FA")
 
-    next_input = input("2fa password: ")  # Users enters their 2FA password
-    await signin_handler_2fa(next_input)  # Pass input to relevant handler
+    tfa = input("2fa password: ")  # Users enters their 2FA password
+    await signin_handler_2fa(tfa)  # Pass input to relevant handler
     if gvars.state == SignInState.SIGNED_IN:
         print("Successfully Signed in!")
         return  # Exits if Signin state is 2 - SIGNED_IN
@@ -90,7 +90,7 @@ async def signin_handler_phone(phone: str):
         gvars.state = SignInState.FLOOD_WAIT_ERR
 
 
-async def signin_handler_code(verif: str):
+async def signin_handler_code(phone: str, verif: str):
     """
     Sends sign in request to telegram using the signin verification code
 
@@ -98,7 +98,7 @@ async def signin_handler_code(verif: str):
     :return: None
     """
     try:
-        var = await gvars.client.sign_in(code=verif)
+        var = await gvars.client.sign_in(phone=phone, code=verif)
         print(var.stringify())
         if await gvars.client.is_user_authorized():
             gvars.state = SignInState.SIGNED_IN
@@ -113,7 +113,7 @@ async def signin_handler_code(verif: str):
     except SessionPasswordNeededError:
         gvars.state = SignInState.AWAITING_2FA
 
-
+# TODO Look into the inputs that I need for the sign_in method, bc i might need all 3
 async def signin_handler_2fa(tfa: str):
     """
     Sends sign in request to telegram using 2FA password

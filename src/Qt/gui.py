@@ -46,7 +46,7 @@ from src.Qt.pages import login
 def main():
     app = QApplication([])
     # appp = QGuiApplication([])
-    # app.setStyleSheet(ilr.read_text(assets, 'style.qss'))
+    app.setStyleSheet(ilr.read_text(assets, 'style.qss'))
     widget = MainWindow()
     widget.setWindowIcon(QIcon(get_pixmap(assets, "app.png")))
     widget.setWindowTitle("PLACEHOLDER")
