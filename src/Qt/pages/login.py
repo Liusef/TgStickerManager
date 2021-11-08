@@ -1,14 +1,13 @@
 import asyncio
 
-from qasync import asyncSlot
-
-import src
-from src import assets, gvars
 from PySide6.QtWidgets import QWidget, QStackedWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QHBoxLayout
 from PySide6.QtGui import QPixmap, QIcon, QFont
 from PySide6.QtCore import Qt
 import phonenumbers
+from qasync import asyncSlot
 
+import src
+from src import assets, gvars
 from src.Qt.gui import generate_font, nest_widget, get_pixmap
 from src.Tg import auth
 
@@ -143,11 +142,17 @@ class TgLoginWidget(QWidget):
 
         @asyncSlot()
         async def shit(self):
+            # TODO this is awful, please fix this
+            loading = QLabel()
+            loading.setText("Loading...")
+            loading.setFont(generate_font(loading, 14))
+            self.widget(self.currentIndex()).layout().addWidget(loading)
             print('sending signin code for auth')
             print(f'phone: {self.pn}\ncode: {self.code}')
             await auth.signin_handler_code(self.pn, self.code)
             urmom = await gvars.client.is_user_authorized()
             print(f'user is authorized: {urmom}')
+            self.widget(self.currentIndex()).layout().removeWidget(loading)
             if urmom:
                 self.insertWidget(2, QWidget())
                 self.setCurrentIndex(2)
@@ -158,6 +163,12 @@ class TgLoginWidget(QWidget):
             await self.next_page(self.pn)
 
         async def next_page(self, phone: str):
+            # TODO this is awful, please fix this
+            loading = QLabel()
+            loading.setText("Loading...")
+            loading.setFont(generate_font(loading, 14))
+            self.widget(self.currentIndex()).layout().addWidget(loading)
+
             if not gvars.client.is_connected():
                 print('tgclient is not connected, connecting...')
                 await gvars.client.connect()
@@ -167,6 +178,8 @@ class TgLoginWidget(QWidget):
             print('creating signin_handler coroutine')
             await auth.signin_handler_phone(phone)
             print('sent sign-in code if one has not been sent and been unused recently')
+
+            self.widget(self.currentIndex()).layout().removeWidget(loading)
 
             while self.count() > 1: self.removeWidget(self.widget(1))
             phone = phonenumbers.format_number(phonenumbers.parse('+' + phone),

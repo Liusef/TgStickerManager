@@ -2,13 +2,12 @@ import asyncio
 import sys
 from types import ModuleType
 
-from qasync import QEventLoop
-
 from src import assets
 from PySide6.QtWidgets import QApplication, QWidget, QMainWindow, QStackedWidget, QVBoxLayout, QLabel, QLineEdit, \
     QPushButton
 from PySide6.QtGui import QPixmap, QIcon, QFont, QGuiApplication
 from PySide6.QtCore import Qt
+from qasync import QEventLoop
 import importlib.resources as ilr
 import phonenumbers
 
@@ -59,7 +58,6 @@ def main():
         loop.run_forever()
 
     print('coroutine has ended')
-
 
 
 if __name__ == '__main__':
