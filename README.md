@@ -12,6 +12,8 @@ Can I fix it? *I don't know*.
 Do I hate it? *Yes*. 
 Am I in severe pain and agony? *Always*.
 
+I hate Python.
+
 ## Setting up the project
 To download the code and run on your local machine, you need to do a couple things
 1. Install the required packages from requirements.txt
