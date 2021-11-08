@@ -1,6 +1,17 @@
 # TgStickerManager
 A program to deal with @stickers on telegram so you don't have to
 
+# A Stupid Abstract Issue that I cannot explain
+This program will only run properly on Python 3.10.0 (the latest version as of writing this).
+While the code is technically still valid down to Python 3.6, for some godforsaken reason
+Network requests will all time out when being called from PySide6 button. 
+
+Why does it do this? I don't know.
+Can I fix it? I don't know.
+
+Do I hate it? Yes. 
+Am I in severe pain and agony? Always.
+
 ## Setting up the project
 To download the code and run on your local machine, you need to do a couple things
 1. Install the required packages from requirements.txt
@@ -11,4 +22,4 @@ To download the code and run on your local machine, you need to do a couple thin
    api_hash: str =  # put your API App Hash here 
    
 ## Pain
-Agony even
+Agony even skjgfdnhlksjhfguedhlkauhfrlgu
