@@ -3,8 +3,8 @@ A program to deal with @stickers on telegram so you don't have to
 
 # A Stupid Abstract Issue that I cannot explain
 This program will only run properly on Python 3.10.0 (the latest version as of writing this).
-While the code is technically still valid down to Python 3.6, for some godforsaken reason
-Network requests will all time out when being called from PySide6 button. 
+While the code is technically still valid down to Python 3.7, for some godforsaken reason
+Network requests will all time out when being called from a PySide6 button. 
 
 Why does it do this? I don't know.
 Can I fix it? I don't know.
