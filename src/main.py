@@ -1,34 +1,19 @@
-import asyncio
-import sys
+import logging
+from logging import debug, info, warning, error, critical
 
-import telethon.tl.types as tg
-
-from src.Tg.auth import SignInState
-from src import gvars
+from src import utils, gvars
 from src.Qt import gui
-from src.Tg import auth, tgapi
 
-
-async def master():
-    # print('coroutine started')
-    # await gvars.client.connect()
-    # gvars.state = SignInState.CONNECTED_NSI
-    # print(gvars.client.is_connected())
-    # print('urmom')
-    # await auth.signin_cli()
-    # loc: tg.TypeInputFile = await tgapi.upload_file(gvars.DATAPATH + 'fbm.png')
-    # await tgapi.send_sb(loc)
-    gui.main()
-    await asyncio.Future()
-
-
-# async def main():
-#     await gvars.client.connect()
-#     gvars.state = SignInState.CONNECTED_NSI
-#     await auth.signin_cli()
-#     print(await tgapi.get_owned_stickerset_shortnames())
 
 def main():
+    utils.setup_logging(
+        level=logging.DEBUG,
+        console=True,
+        file=True,
+        path=gvars.DATAPATH + 'log.txt'
+    )
+    info('===== Main method run =====')
+    debug('logger instantiated')
     gui.main()
 
 

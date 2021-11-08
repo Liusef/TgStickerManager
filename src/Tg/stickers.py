@@ -4,7 +4,7 @@ from typing import Union
 from telethon.tl.types import Document, DocumentAttributeImageSize, StickerSet, StickerPack, \
     DocumentAttributeFilename, InputDocumentFileLocation, InputStickerSetThumb, InputStickerSetShortName, PhotoSize
 from telethon.tl.types.messages import StickerSet as ParentSet
-
+from logging import debug, info, warning, error, critical
 from src import gvars, utils
 import tgapi
 import jsonpickle
@@ -14,6 +14,7 @@ class TgSticker:
     # TODO Docstring
     def __init__(self, doc: Document, emojis: str, parent_sn: str):
         # TODO Docstring
+        debug(f'Instantiating TgSticker Object under stickerset {parent_sn}')
         self.doc_id: int = doc.id
         self.doc_access_hash: int = doc.access_hash
         self.doc_mimetype: str = doc.mime_type
@@ -41,6 +42,7 @@ class TgPackThumb:
     # TODO Docstring
     def __init__(self, parent_shortname: str, height: int, width: int, size: int, dc_id: int, version: int):
         # TODO Docstring
+        debug(f'TgPackThumb object for set {parent_shortname} instantiated')
         self.parent_sn: str = parent_shortname
         self.height: int = height
         self.width: int = width
@@ -57,6 +59,7 @@ class TgStickerPack:
     # TODO Docstring
     def __init__(self, sset: StickerSet, stickers: list[TgSticker], thumb: Union[TgPackThumb, None]):
         # TODO Docstring
+        debug(f'TgStickerPack object for set {sset.short_name} instantiated')
         self.id: int = sset.id
         self.access_hash: int = sset.access_hash
         self.name: str = sset.title
@@ -69,6 +72,8 @@ class TgStickerPack:
 
     async def download_stickers(self):
         # TODO Docstring
+        info(f'Downloading all stickers in pack {self.sn} to cache')
+        debug(f'creating src.Tg.tgapi.download_doclist coroutine and adding to the event loop')
         await tgapi.download_doclist(
             [d.get_loc() for d in self.stickers],
             [tgapi.DocName(d.filename, d.doc_mimetype) for d in self.stickers],
@@ -79,15 +84,18 @@ class TgStickerPack:
     async def download_thumb(self):
         # TODO Docstring
         if self.thumb is None:
-            print("This pack doesn't have a dedicated thumb! Use the first sticker in the pack as the thumbnail\n")
+            warning("This pack doesn't have a dedicated thumb! Use the first sticker in the pack as the thumbnail\n")
             return
         else:
+            info(f'Downloading pack thumbnail for pack {self.sn} and saving to cache')
+            debug(f'creating src.Tg.tgapi.download_file coroutine and adding to the event loop')
             await gvars.client.download_file(
                 InputStickerSetThumb(InputStickerSetShortName(self.sn), self.thumb.version),
                 gvars.CACHEPATH + self.sn + os.sep + 'thumb.' + ('tgs' if self.is_animated else 'webp')
             )
 
     async def update_meta(self):
+        info(f'Updating metadata for pack {self.sn}')
         npack: TgStickerPack = generate(await tgapi.get_stickerset(self.sn))
         self.id = npack.id
         self.access_hash = npack.access_hash
@@ -98,10 +106,13 @@ class TgStickerPack:
         self.is_animated = npack.is_animated
         self.thumb = npack.thumb
         self.stickers = npack.thumb
+        debug('creating download_thumb coroutine and adding to the event loop')
         await self.download_thumb()
+        debug('serializing pack metadata to cache')
         serialize_pack(self)
 
     async def update_all(self):
+        info(f'Updating all cached information for pack {self.sn}')
         await self.update_meta()
         await self.download_stickers()
 
@@ -128,22 +139,31 @@ def generate_thumb(sset: Union[ParentSet, StickerSet]) -> Union[TgPackThumb, Non
     return TgPackThumb(sset.short_name, ps.h, ps.w, ps.size, sset.thumb_dc_id, sset.thumb_version)
 
 
-async def get_pack(sn: str, force_get_new: bool = False, force_download_stickers: bool = False) -> TgStickerPack:
+async def get_pack(sn: str, force_get_new: bool = False, force_redownload_stickers: bool = False) -> TgStickerPack:
     # TODO Docstring
-    if force_download_stickers and not force_get_new:
-        tgpack: TgStickerPack = cache.deserialize_pack(sn)
+    info(f'Generating local data for pack {sn}')
+    if force_redownload_stickers and not force_get_new:
+        debug('creating new TgStickerPack object. download_stickers coroutine created and added to the event loop')
+        tgpack: TgStickerPack = deserialize_pack(sn)
         await tgpack.download_stickers()
         return tgpack
     if check_pack_saved(sn) and not force_get_new:
+        debug(f'deserializing pack {sn} from local cache')
         return deserialize_pack(sn)
+    info(f'Sticker set {sn} not saved in local cache, downloading from Telegram')
+    debug('creating src.Tg.tgapi.get_stickerset coroutine and adding to the event loop')
     sset: StickerSet = await tgapi.get_stickerset(sn)
     tgpack: TgStickerPack = generate(sset)
+    debug(f'Serializing {sn} to local cache')
     serialize_pack(tgpack)
+    debug('creating tgpack.download_stickers coroutine and adding to the event loop')
     await tgpack.download_stickers()
     return tgpack
 
+
 def serialize_pack(pack: TgStickerPack):
     # TODO Docstring
+    info(f'Serializing Metadata for for {pack.sn} to local cache')
     jsonpickle.set_encoder_options('json', indent=4)
     ser: str = jsonpickle.encode(pack, unpicklable=True, keys=True)
     utils.write_txt(ser, gvars.CACHEPATH + pack.sn + os.sep, pack.sn, 'json')
@@ -151,10 +171,12 @@ def serialize_pack(pack: TgStickerPack):
 
 def check_pack_saved(sn: str) -> bool:
     # TODO Docstring
+    info(f'Checking if pack {sn} is saved on the local cache')
     return utils.check_file(gvars.CACHEPATH + sn + os.sep + sn + '.json')
 
 
 def deserialize_pack(sn: str) -> TgStickerPack:
     # TODO Docstring
+    info(f'Deserializing pack {sn} from local cache')
     ser: str = utils.read_txt(gvars.CACHEPATH + sn + os.sep + sn + '.json')
     return jsonpickle.decode(ser, keys=True, classes=TgStickerPack)

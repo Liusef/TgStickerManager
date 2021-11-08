@@ -29,6 +29,8 @@ import telethon
 from telethon.errors import FloodWaitError
 from telethon.errors import SessionPasswordNeededError
 from telethon.errors import PhoneCodeInvalidError
+import logging
+from logging import debug, info, warning, error, critical
 from src import gvars, utils
 
 
@@ -39,15 +41,16 @@ async def signin_cli():
 
     :return: None
     """
+    warning('This method does not have proper logging implemented')
     if await gvars.client.is_user_authorized():  # Checking if the user is Signed in (2)
-        print("You're all signed in and ready to go! No need to sign in again :]")
+        info("You're all signed in and ready to go! No need to sign in again :]")
         gvars.state = SignInState.SIGNED_IN
         return  # Exits if Signin state is 2 - SIGNED_IN
 
     phone: str = input("Phone number: ")  # Reading phone number from the user (login id)
     await signin_handler_phone(phone)  # Pass input to relevant handler
     if gvars.state == SignInState.SIGNED_IN:
-        print("Successfully Signed in!")
+        info("Successfully Signed in!")
         return  # Exits if Signin state is 2 - SIGNED_IN
     if gvars.state != SignInState.AWAITING_CODE:
         raise Exception("signin_cli expected state SIGNED_IN or AWAITING_CODE")
@@ -55,7 +58,7 @@ async def signin_cli():
     code = input("Code: ")  # User enters code they received from @Telegram
     await signin_handler_code(phone, code)  # Pass input to relevant handler
     if gvars.state == SignInState.SIGNED_IN:
-        print("Successfully Signed in!")
+        info("Successfully Signed in!")
         return  # Exits if Signin state is 2 - SIGNED_IN
     if gvars.state != SignInState.AWAITING_2FA:
         raise Exception("Signin_cli expected state SIGNED_IN or AWAITING_2FA")
@@ -63,7 +66,7 @@ async def signin_cli():
     tfa = input("2fa password: ")  # Users enters their 2FA password
     await signin_handler_2fa(tfa)  # Pass input to relevant handler
     if gvars.state == SignInState.SIGNED_IN:
-        print("Successfully Signed in!")
+        info("Successfully Signed in!")
         return  # Exits if Signin state is 2 - SIGNED_IN
 
     raise Exception("Signin_cli expected state SIGNED_IN or AWAITING_2FA")
@@ -77,41 +80,49 @@ async def signin_handler_phone(phone: str):
     :param phone: The phone number of the user that wants to sign in, must include country code
     :return: None
     """
+
+    debug('src.Tg.auth.signin_handler_phone() called')
+    debug(f'phone: {phone}')
+    info('Attempting authentication with phone number')
     try:
+        debug(f'creating tgclient.sign_in coroutine and adding to the event loop')
         var = await gvars.client.sign_in(phone)
-        print(var.stringify())
-        if type(var) == telethon.types.auth.SentCode:
-            gvars.state = SignInState.AWAITING_CODE
-        elif await gvars.client.is_user_authorized():
-            gvars.state = SignInState.SIGNED_IN
-        else:
-            utils.raise_exception_no_err(var)
-    except FloodWaitError:
-        gvars.state = SignInState.FLOOD_WAIT_ERR
+        debug(f'tgclient.sign_in coroutine finished and returned a value:\n{var.stringify()}')
+        if type(var) == telethon.types.auth.SentCode: awaiting_code()
+        elif await gvars.client.is_user_authorized(): signed_in()
+        else: unexpected(var)
+    except FloodWaitError as e: flood_wait(e)
 
 
 async def signin_handler_code(phone: str, verif: str):
+    # TODO Update docstring to include new args
     """
     Sends sign in request to telegram using the signin verification code
 
     :param verif: The verification code sent to the user via @Telegram
     :return: None
     """
+    debug('src.Tg.auth.signin_handler_phone() called')
+    debug(f'phone: {phone}')
+    debug(f'code:  {verif}')
+    info('Attempting authentication with phone number and code')
     try:
+        debug(f'creating tgclient.sign_in coroutine and adding to the event loop')
         var = await gvars.client.sign_in(phone=phone, code=verif)
-        print(var.stringify())
-        if await gvars.client.is_user_authorized():
-            gvars.state = SignInState.SIGNED_IN
-        elif type(var) != telethon.types.User:
-            raise Exception("Program called sign_in after received code, method did not return type User. " +
-                            "Program raised exception because sign in failed, or other error")
-        else:
-            utils.raise_exception_no_err(var)
+        debug(f'tgclient.sign_in coroutine finished and returned a value:\n{var.stringify()}')
+        if await gvars.client.is_user_authorized(): signed_in()
+        else: unexpected(var)
     except PhoneCodeInvalidError:
-        print("PhoneCodeInvalidError, wot")
+        error(f'The phone code entered ({verif}) was invalid. Sign in unsuccessful')
         gvars.state = SignInState.AWAITING_CODE
+        debug('SignInState set to AWAITING_CODE')
     except SessionPasswordNeededError:
+        info('User needs Two Factor Authentication Password to Sign In')
         gvars.state = SignInState.AWAITING_2FA
+        # TODO Implement 2FA and make sure you remove this after you do (and add a warning saying it may not work)
+        critical('Two Factor Sign in not implemented, program must halt')
+        raise NotImplementedError('User account needs 2nd factor to sign in. 2FA is not implemented in the GUI.')
+
 
 # TODO Look into the inputs that I need for the sign_in method, bc i might need all 3
 async def signin_handler_2fa(tfa: str):
@@ -121,15 +132,14 @@ async def signin_handler_2fa(tfa: str):
     :param tfa: The 2 factor auth password
     :return: None
     """
+    debug('src.Tg.auth.signin_handler_2fa() called')
+    debug(f'2fa: {tfa}')
+    warning('This method has not been tested and may not work properly, proceed with caution.')
+    warning('This method does not have proper logging implemented')
     var = await gvars.client.sign_in(password=tfa)
     print(var.stringify())
-    if await gvars.client.is_user_authorized():
-        gvars.state = SignInState.SIGNED_IN
-    elif type(var) != telethon.types.User:
-        raise Exception("Program called sign_in after received code, method did not return type User. " +
-                        "Program raised exception because sign in failed, or other error")
-    else:
-        utils.raise_exception_no_err(var)
+    if await gvars.client.is_user_authorized(): signed_in()
+    else: unexpected(var)
 
 
 async def signin_handler_request_new_code(phone: str):
@@ -139,5 +149,31 @@ async def signin_handler_request_new_code(phone: str):
     :param phone: The phone number of the user, must include country code
     :return: None
     """
+    info('Sending Request to telegram for sign in code')
+    warning('This method does not generate a new code for sign in. If needed, use the last sign in code given to you')
+    debug('creating tgclient.send_code_request coroutine and adding to the event loop')
     var = await gvars.client.send_code_request(phone)
-    print(var.stringify())
+    debug(f'Received response from tgclient.send_code_request:\n{var.stringify()}')
+
+
+def awaiting_code():
+    info('tgclient.sign_in was unsuccessful: verification code sent')
+    debug('SignInState set to AWAITING_CODE')
+    gvars.state = SignInState.AWAITING_CODE
+
+
+def signed_in():
+    info('tgclient.sign_in was successful. User is now authorized to make Telegram API calls!')
+    gvars.state = SignInState.SIGNED_IN
+    debug('SignInState set to SIGNED_IN')
+
+
+def flood_wait(e: BaseException):
+    error('tgclient.sign_in threw a FloodWaitError. This could mean that too many requests were sent')
+    error(f'{str(e)}')
+    gvars.state = SignInState.FLOOD_WAIT_ERR
+
+
+def unexpected(var):
+    critical('tgclient.sign_in returned an unexpected value and the program is unable to continue')
+    utils.raise_exception_no_err(var)

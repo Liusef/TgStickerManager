@@ -1,4 +1,6 @@
+import logging
 import os
+import sys
 
 from telethon.tl.tlobject import TLObject
 from telethon.tl.types import Document, DocumentAttributeFilename
@@ -99,3 +101,14 @@ def get_attr_filename(f: Document, fallback: str = "") -> str:
     attr: DocumentAttributeFilename = get_doc_attr(f, DocumentAttributeFilename)
     if attr is None: return fallback
     return attr.file_name
+
+
+def setup_logging(level: int, console: bool, file: bool, path: str = None):
+    hnd = []
+    hnd.append(logging.StreamHandler(sys.stdout)) if console else None
+    hnd.append(logging.FileHandler("debug.log")) if file else None
+    logging.basicConfig(
+        level=level,
+        format="%(asctime)s [%(levelname)s] %(message)s",
+        handlers=hnd
+    )

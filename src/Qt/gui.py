@@ -1,24 +1,26 @@
 import asyncio
-import sys
+import importlib.resources as ilr
 from types import ModuleType
+import logging
+from logging import debug, info, warning, error, critical
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QPixmap, QIcon, QFont
+from PySide6.QtWidgets import QApplication, QWidget, QMainWindow, QVBoxLayout
+from qasync import QEventLoop
 
 from src import assets
-from PySide6.QtWidgets import QApplication, QWidget, QMainWindow, QStackedWidget, QVBoxLayout, QLabel, QLineEdit, \
-    QPushButton
-from PySide6.QtGui import QPixmap, QIcon, QFont, QGuiApplication
-from PySide6.QtCore import Qt
-from qasync import QEventLoop
-import importlib.resources as ilr
-import phonenumbers
 
 
 def get_pixmap(module: ModuleType, resource: str) -> QPixmap:
+    debug('src.Qt.gui.get_pixmap() called')
     pixmap: QPixmap = QPixmap()
     pixmap.loadFromData(ilr.read_binary(module, resource))
+    debug(f'Read {resource} from module {str(module)}, loaded into QPixmap')
     return pixmap
 
 
 def generate_font(label, size: int, weight: QFont.Weight = QFont.Normal):
+    debug('src.Qt.gui.generate_font() called')
     font = label.font()
     font.setStyleStrategy(QFont.PreferAntialias)
     font.setPointSize(size)
@@ -27,6 +29,7 @@ def generate_font(label, size: int, weight: QFont.Weight = QFont.Normal):
 
 
 def nest_widget(widget: QWidget) -> QWidget:
+    debug('src.Qt.gui.nest_widget() called')
     nwidget = QWidget()
     nwidget.setLayout(QVBoxLayout())
     nwidget.layout().setAlignment(Qt.AlignCenter)
@@ -43,8 +46,8 @@ from src.Qt.pages import login
 
 
 def main():
+    debug('src.Qt.gui.main() called')
     app = QApplication([])
-    # appp = QGuiApplication([])
     app.setStyleSheet(ilr.read_text(assets, 'style.qss'))
     widget = MainWindow()
     widget.setWindowIcon(QIcon(get_pixmap(assets, "app.png")))
@@ -55,9 +58,10 @@ def main():
     with QEventLoop(app) as loop:
         widget.show()
         asyncio.set_event_loop(loop)
+        debug('QEventLoop set as asyncio event loop, setting loop to run forever...')
         loop.run_forever()
 
-    print('coroutine has ended')
+    debug('QEventLoop has stopped')
 
 
 if __name__ == '__main__':
