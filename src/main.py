@@ -6,14 +6,7 @@ from src.Qt import gui
 
 
 def main():
-    utils.setup_logging(
-        level=logging.DEBUG,
-        console=True,
-        file=True,
-        path=gvars.DATAPATH + 'log.txt'
-    )
     info('===== Main method run =====')
-    debug('logger instantiated')
     gui.main()
 
 

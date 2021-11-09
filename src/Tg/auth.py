@@ -157,7 +157,7 @@ async def signin_handler_request_new_code(phone: str):
 
 
 def awaiting_code():
-    info('tgclient.sign_in was unsuccessful: verification code sent')
+    info('tgclient.sign_in needs a code to continue: verification code sent to your telegram account')
     debug('SignInState set to AWAITING_CODE')
     gvars.state = SignInState.AWAITING_CODE
 

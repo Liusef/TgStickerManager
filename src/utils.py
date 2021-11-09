@@ -1,4 +1,5 @@
 import logging
+from logging import debug, info, warning, error, critical
 import os
 import sys
 
@@ -17,7 +18,7 @@ def raise_exception_no_err(val=None):
     objstr: str = val.stringify() if isinstance(val, TLObject) else str(val)
     if (val != None):
         var = '\n' + str(type(val)) + '\n' + str(val)
-    raise Exception("Program called sign_in, failed to signin, connect, send auth code, or receive other error\n" + var)
+    raise Exception("Program encountered something unexpected\n" + var)
 
 
 def get_path_ext(path: str, fallback_ext: str = '') -> str:
@@ -35,6 +36,7 @@ def get_path_ext(path: str, fallback_ext: str = '') -> str:
 
 def check_file(file: str) -> bool:
     # TODO Docstring
+    debug(f'Checking if {file} exists')
     return os.path.exists(file)
 
 
@@ -45,7 +47,9 @@ def check_path(path: str) -> str:
     :param path: The path to check
     :return: The path that was input
     """
+    debug(f'Checking if {path} exists')
     if not os.path.exists(path):
+        debug(f'Path was not found, creating...')
         os.makedirs(path)
     return path
 
@@ -63,6 +67,7 @@ def check_all_paths(paths: list[str]):
 
 def read_txt(file: str) -> str:
     # TODO Docstring
+    debug(f'Reading text from {file}')
     with open(file, 'r') as f:
         return f.read()
 
@@ -77,6 +82,7 @@ def write_txt(txt: str, path: str, fname: str, ext: str, encode: str = 'utf8'):
     :param fname: The filename of the file to write to
     :return: None
     """
+    debug(f'Writing text to {path}{fname}{ext}')
     ext = ('.' + ext) if (len(ext) > 0) else ext
     f = open(check_path(path) + fname + ext, 'w', encoding=encode)
     f.write(txt)
@@ -106,7 +112,7 @@ def get_attr_filename(f: Document, fallback: str = "") -> str:
 def setup_logging(level: int, console: bool, file: bool, path: str = None):
     hnd = []
     hnd.append(logging.StreamHandler(sys.stdout)) if console else None
-    hnd.append(logging.FileHandler("debug.log")) if file else None
+    hnd.append(logging.FileHandler(path)) if file else None
     logging.basicConfig(
         level=level,
         format="%(asctime)s [%(levelname)s] %(message)s",

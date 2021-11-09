@@ -1,9 +1,15 @@
 import os
 
+import logging
 from telethon import TelegramClient as tgclient
 
 from src import apikeys, utils
 from src.Tg.auth import SignInState
+
+try:
+    apikeys.api_id + 1
+except Exception as e:
+    print('The file apikeys.py was not created. Check details in the readme.')
 
 # API Keys for Telegram Application
 # apikeys.py not added to this repository for safety
@@ -13,23 +19,35 @@ api_hash: str = apikeys.api_hash
 # Paths
 DATAPATH: str = 'tgsticker' + os.sep  # Root program data path
 SESSIONPATH: str = DATAPATH + 'sessions' + os.sep  # Login session path
-CACHEPATH: str = DATAPATH + 'cache' + os.sep # Data Caching Path
+CACHEPATH: str = DATAPATH + 'cache' + os.sep  # Data Caching Path
+
+# Logging
+utils.setup_logging(
+    level=logging.INFO,
+    console=True,
+    file=True,
+    path=DATAPATH + 'debug.log'
+)
+
 utils.check_all_paths([DATAPATH, SESSIONPATH, CACHEPATH])  # Checking if all paths exist
 
 # MIME Types
 MIME: dict[str, str] = {
-    'image/webp' : 'webp',
-    'application/x-tgsticker' : 'tgs',
-    'text/plain' : 'txt',
-    'application/octet-stream' : ''
+    'image/webp': 'webp',
+    'application/x-tgsticker': 'tgs',
+    'text/plain': 'txt',
+    'application/octet-stream': ''
 }
 
 # User handles
 STICKERBOT: str = 'Stickers'  # Sticker bot   : @Stickers
 
+
 # Telegram client object to make requests and receive data
 def get_client(name: str) -> tgclient:
     return tgclient(SESSIONPATH + name, api_id, api_hash)
+
+
 client: tgclient = get_client('user')
 
 # SignInState object to track the state of the telegram client

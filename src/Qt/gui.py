@@ -12,7 +12,6 @@ from src import assets
 
 
 def get_pixmap(module: ModuleType, resource: str) -> QPixmap:
-    debug('src.Qt.gui.get_pixmap() called')
     pixmap: QPixmap = QPixmap()
     pixmap.loadFromData(ilr.read_binary(module, resource))
     debug(f'Read {resource} from module {str(module)}, loaded into QPixmap')
@@ -20,7 +19,6 @@ def get_pixmap(module: ModuleType, resource: str) -> QPixmap:
 
 
 def generate_font(label, size: int, weight: QFont.Weight = QFont.Normal):
-    debug('src.Qt.gui.generate_font() called')
     font = label.font()
     font.setStyleStrategy(QFont.PreferAntialias)
     font.setPointSize(size)
@@ -29,7 +27,6 @@ def generate_font(label, size: int, weight: QFont.Weight = QFont.Normal):
 
 
 def nest_widget(widget: QWidget) -> QWidget:
-    debug('src.Qt.gui.nest_widget() called')
     nwidget = QWidget()
     nwidget.setLayout(QVBoxLayout())
     nwidget.layout().setAlignment(Qt.AlignCenter)
