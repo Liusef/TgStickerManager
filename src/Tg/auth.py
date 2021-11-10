@@ -42,6 +42,9 @@ async def signin_cli():
     :return: None
     """
     warning('This method does not have proper logging implemented')
+
+    await ensure_connected()
+
     if await gvars.client.is_user_authorized():  # Checking if the user is Signed in (2)
         info("You're all signed in and ready to go! No need to sign in again :]")
         gvars.state = SignInState.SIGNED_IN
@@ -71,6 +74,12 @@ async def signin_cli():
 
     raise Exception("Signin_cli expected state SIGNED_IN or AWAITING_2FA")
     # If signin is not completed by this point in the signin process, exception is thrown as what the fuck
+
+
+async def ensure_connected():
+    info('Ensuring that client is connected to Telegram')
+    await gvars.client.connect()
+    gvars.state = SignInState.CONNECTED_NSI
 
 
 async def signin_handler_phone(phone: str):

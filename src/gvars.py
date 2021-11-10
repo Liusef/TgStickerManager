@@ -26,7 +26,7 @@ utils.setup_logging(
     level=logging.INFO,
     console=True,
     file=True,
-    path=DATAPATH + 'debug.log'
+    path='debug.log'
 )
 
 utils.check_all_paths([DATAPATH, SESSIONPATH, CACHEPATH])  # Checking if all paths exist

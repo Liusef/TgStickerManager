@@ -141,6 +141,7 @@ async def get_owned_stickerset_shortnames() -> list[str]:
     debug(f'running src.Tg.tgapi.get_owned_stickerset_shortnames with delay {delay}')
     await send_sb("/cancel")
     await send_sb("/addsticker")
+    # TODO see if i can put this into another method so i can reuse it
     while True:
         await asyncio.sleep(delay)
         debug('checking if latest message includes reply buttons including all owned packs')

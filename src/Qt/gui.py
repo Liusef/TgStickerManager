@@ -5,7 +5,7 @@ import logging
 from logging import debug, info, warning, error, critical
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap, QIcon, QFont
-from PySide6.QtWidgets import QApplication, QWidget, QMainWindow, QVBoxLayout
+from PySide6.QtWidgets import QApplication, QWidget, QMainWindow, QVBoxLayout, QLabel
 from qasync import QEventLoop
 
 from src import assets
@@ -18,8 +18,8 @@ def get_pixmap(module: ModuleType, resource: str) -> QPixmap:
     return pixmap
 
 
-def generate_font(label, size: int, weight: QFont.Weight = QFont.Normal):
-    font = label.font()
+def generate_font(widget, size: int, weight: QFont.Weight = QFont.Normal):
+    font = widget.font()
     font.setStyleStrategy(QFont.PreferAntialias)
     font.setPointSize(size)
     font.setWeight(weight)
@@ -37,6 +37,19 @@ def nest_widget(widget: QWidget) -> QWidget:
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+
+
+class Loading(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setLayout(QVBoxLayout())
+
+        label = QLabel()
+        label.setText("Loading...")
+        label.setFont(generate_font(label, 14, QFont.DemiBold))
+        label.setAlignment(Qt.AlignCenter)
+
+        self.layout().addWidget(label)
 
 
 from src.Qt.pages import login

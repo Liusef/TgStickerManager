@@ -3,6 +3,7 @@ from logging import debug, info, warning, error, critical
 import os
 import sys
 
+import phonenumbers
 from telethon.tl.tlobject import TLObject
 from telethon.tl.types import Document, DocumentAttributeFilename
 
@@ -118,3 +119,13 @@ def setup_logging(level: int, console: bool, file: bool, path: str = None):
         format="%(asctime)s [%(levelname)s] %(message)s",
         handlers=hnd
     )
+
+def is_valid_phone(phone: str) -> bool:
+    try:
+        return phonenumbers.is_valid_number(phonenumbers.parse('+' + phone))
+    except phonenumbers.phonenumberutil.NumberParseException as e:
+        info(f'{phone}: {e}')
+        return False
+
+def format_phone(phone: str) -> str:
+    return phonenumbers.format_number(phonenumbers.parse(phone), phonenumbers.PhoneNumberFormat.INTERNATIONAL)
