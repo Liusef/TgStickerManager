@@ -23,5 +23,13 @@ To download the code and run on your local machine, you need to do a couple thin
    api_id: int =  # put your API App ID here
    api_hash: str =  # put your API App Hash here 
    
+### Quick note
+When installing requirements, installing `cryptg` will fail without
+Visual Studio Build Tools installed. If this happens, just remove
+`cryptg` from `requirements.txt`. This may cause Telegram requests 
+and file transfers to run significantly more slowly, but the program
+will still run. This is because cryptg encrypts and decrypts data in C
+instead of in Python.
+   
 ## Pain
 Agony even skjgfdnhlksjhfguedhlkauhfrlgu
