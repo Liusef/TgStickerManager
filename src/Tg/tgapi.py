@@ -34,17 +34,17 @@ def derive_docname(doc: Document) -> DocName:
     return DocName(utils.get_attr_filename(doc, ""), doc.mime_type)
 
 
-async def send_sb(inpt: Union[str, Document, TypeInputFile]):
+async def send_sb(inpt: Union[str, Document, TypeInputFile]) -> Message:
     # TODO Docstring
 
     if isinstance(inpt, str):
         info('Sending message to stickerbot')
         debug(f'message: {inpt}')
-        await gvars.client.send_message(entity=gvars.STICKERBOT, message=inpt)
+        return await gvars.client.send_message(entity=gvars.STICKERBOT, message=inpt)
     else:
         info('Sending file to stickerbot')
         debug(f'file id: {inpt.id}')
-        await gvars.client.send_file(entity=gvars.STICKERBOT, file=inpt, force_document=True)
+        return await gvars.client.send_file(entity=gvars.STICKERBOT, file=inpt, force_document=True)
 
 
 async def upload_file(path: str) -> TypeInputFile:
@@ -60,6 +60,22 @@ async def upload_callback(sent_bytes: int, total_bytes: int):
     # TODO: Write Method
     # TODO: Write Docstring
     print(str(sent_bytes) + ' / ' + str(total_bytes))
+
+
+async def await_next_msg_id(current_id: int, user: str, delay: float = 0.1) -> Message:
+    # TODO Docstring
+    while True:
+        msg: Message = await gvars.client.iter_messages(entity=user).__anext__()
+        if msg.id != current_id: return msg
+        await asyncio.sleep(delay)
+
+
+async def await_next_msg_str(target_str: str, user: str, delay: float = 0.1) -> Message:
+    # TODO Docstring
+    while True:
+        msg: Message = await gvars.client.iter_messages(entity=user).__anext__()
+        if msg.message == target_str: return msg
+        await asyncio.sleep(delay)
 
 
 def get_document_loc(doc: Document) -> InputDocumentFileLocation:
@@ -141,14 +157,8 @@ async def get_owned_stickerset_shortnames() -> list[str]:
     debug(f'running src.Tg.tgapi.get_owned_stickerset_shortnames with delay {delay}')
     await send_sb("/cancel")
     await send_sb("/addsticker")
-    # TODO see if i can put this into another method so i can reuse it
-    while True:
-        await asyncio.sleep(delay)
-        debug('checking if latest message includes reply buttons including all owned packs')
-        msg: Message = await gvars.client.iter_messages(entity='Stickers').__anext__()
-        if msg.message == "Choose the sticker pack you're interested in.":
-            debug(f'received response that contains the correct message text:\n{msg.stringify()}')
-            break
+    # TODO add logs
+    msg: Message = await await_next_msg_str("Choose the sticker pack you're interested in.", "stickers")
     sets: list[str] = []
     if msg.reply_markup is None or msg.reply_markup.rows is None or len(msg.reply_markup.rows) == 0:
         return sets
