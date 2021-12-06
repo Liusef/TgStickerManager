@@ -74,14 +74,22 @@ class TestWidget1(QTableView):
         self.setDragDropMode(QTableView.InternalMove)
         self.setDefaultDropAction(Qt.MoveAction)
 
+        self.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
+        self.setAutoScroll(True)
+        self.setAutoScrollMargin(50)
+
         self.setModel(model := QStandardItemModel(rows, cols, self))
 
         for i in range(rows):
             for j in range(cols):
                 self.setIndexWidget(self.model().index(i, j), CellContainer())
+                print(f"i:{i} j:{j}")
 
         for i in range(rows * cols):
             self.set_at_idx(i, CellWidget("richard", "richard" + str(i)))
+
+        self.append(CellWidget("ree", "ree"))
+        self.delete(25)
 
     def rows(self) -> int:
         return self.model().rowCount()
@@ -89,7 +97,7 @@ class TestWidget1(QTableView):
     def cols(self) -> int:
         return self.model().columnCount()
 
-    def count(self):
+    def count(self) -> int:
         i = 0
         while True:
             if self.get_at_idx(i) is None:
@@ -105,11 +113,15 @@ class TestWidget1(QTableView):
     def get_col(self, idx: int) -> int:
         return idx % self.cols()
 
-    def get_at_pos(self, row: int, col: int) -> QWidget:
-        return self.indexWidget(self.model().index(row, col)).get()
+    def get_at_pos(self, row: int, col: int) -> Union[CellWidget, None]:
+        var = self.indexWidget(self.model().index(row, col))
+        if isinstance(var, CellContainer): return var.get()
+        return None
 
-    def get_at_idx(self, idx: int):
-        return self.indexWidget(self.model().index(idx // self.cols(), idx % self.cols())).get()
+    def get_at_idx(self, idx: int) -> Union[CellWidget, None]:
+        var = self.indexWidget(self.model().index(self.get_row(idx), self.get_col(idx)))
+        if isinstance(var, CellContainer): return var.get()
+        return None
 
     def set_at_pos(self, row: int, col: int, widget: QWidget):
         self.indexWidget(self.model().index(row, col)).set(widget)
@@ -117,15 +129,20 @@ class TestWidget1(QTableView):
     def set_at_idx(self, idx: int, widget: QWidget):
         self.indexWidget(self.model().index(idx // self.cols(), idx % self.cols())).set(widget)
 
-    def dropEvent(self, event:QtGui.QDropEvent) -> None:
+    def dropEvent(self, event: QtGui.QDropEvent) -> None:
         print(event.pos())
         pos = event.pos()
-        r = pos.y() // self.cellheight
+        r = (pos.y() + self.verticalScrollBar().value()) // self.cellheight
         c = pos.x() // self.cellwidth
+        if c >= self.cols(): return
         print(f"r:{r} c:{c}")
         print(self.selectedIndexes())
-        start = self.get_idx( (self.selectedIndexes()[0]).row(), (self.selectedIndexes()[0]).column() )
+        start = self.get_idx((self.selectedIndexes()[0]).row(), (self.selectedIndexes()[0]).column())
         end = self.get_idx(r, c)
+        if self.get_at_idx(start) is None or self.get_at_idx(end) is None: return
+        self.move_widget(start, end)
+
+    def move_widget(self, start: int, end: int):
         if end > start:
             self.move_after(start, end)
         elif start > end:
@@ -155,6 +172,25 @@ class TestWidget1(QTableView):
         for i in range(self.count()):
             lst.append(self.get_at_idx(i))
         return lst
+
+    def append(self, widget: CellWidget):
+        count: int = self.count()
+        if count % self.cols() == 0:
+            self.model().insertRow(self.rows())
+            for i in range(self.cols()):
+                self.setIndexWidget(self.model().index(self.rows() - 1, i), CellContainer())
+        self.set_at_idx(count, widget)
+
+    def delete(self, idx: int):
+        elems = []
+        if idx >= self.count(): return
+        for i in range(idx + 1, self.count()):
+            elems.append(self.get_at_idx(i))
+        i = idx
+        for e in elems:
+            self.set_at_idx(i, e)
+        if self.rows() > self.count() // self.cols():
+            self.model().removeRow(self.rows() - 1)
 
 
 def main():
