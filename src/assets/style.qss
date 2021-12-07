@@ -21,7 +21,7 @@ QToolTip
 QWidget
 {
     color: #dddddd;
-    selection-background-color:#3d8ec9;
+    selection-background-color: #66778899;
     selection-color: black;
     background-clip: border;
     outline: 0;
@@ -29,13 +29,15 @@ QWidget
 
 QWidget:item:hover
 {
-    background-color: #78879b;
+    background-color: #66778899;
     color: black;
+    border-radius: 8px;
 }
 
 QWidget:item:selected
 {
-    background-color: #3d8ec9;
+    background-color: #66778899;
+    border-radius: 8px;
 }
 
 QCheckBox
@@ -232,7 +234,7 @@ QHeaderView::section
     background-color: #3A3939;
     color: silver;
     padding-left: 4px;
-    border: 1px solid #6c6c6c;
+    /* border: 1px solid #6c6c6c; */
 }
 
 QMainWindow
@@ -544,7 +546,7 @@ QDockWidget::close-button:pressed, QDockWidget::float-button:pressed {
 }
 
 QTreeView, QListView, QTextBrowser, AtLineEdit, AtLineEdit::hover {
-    border: 1px solid #444;
+    /* border: 1px solid #444; */
     background-color: silver;
     border-radius: 3px;
     margin-left: 3px;
@@ -653,31 +655,28 @@ QPushButton::menu-indicator  {
 
 QTableView
 {
-    border: 1px solid #444;
-    gridline-color: #6c6c6c;
-    background-color: #201F1F;
+    /* background-color: #201F1F; */
+    background-color: transparent;
+    border: 0px;
 }
 
 
 QTableView, QHeaderView
 {
-    border-radius: 0px;
+    border-radius: 8px;
 }
 
 QTableView::item:pressed, QListView::item:pressed, QTreeView::item:pressed  {
-    background: #78879b;
     color: #FFFFFF;
 }
 
 QTableView::item:selected:active, QTreeView::item:selected:active, QListView::item:selected:active  {
-    background: #3d8ec9;
     color: #FFFFFF;
 }
 
 
 QHeaderView
 {
-    border: 1px transparent;
     border-radius: 2px;
     margin: 0px;
     padding: 0px;
@@ -687,7 +686,7 @@ QHeaderView::section  {
     background-color: #3A3939;
     color: silver;
     padding: 4px;
-    border: 1px solid #6c6c6c;
+    /* border: 1px solid #6c6c6c; */
     border-radius: 0px;
     text-align: center;
 }
@@ -722,7 +721,7 @@ QHeaderView::section:checked
 
 QTableCornerButton::section {
     background-color: #3A3939;
-    border: 1px solid #3A3939;
+    /* border: 1px solid #3A3939; */
     border-radius: 2px;
 }
 

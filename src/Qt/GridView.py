@@ -1,7 +1,7 @@
 from typing import Union
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QStandardItemModel, QDropEvent
+from PySide6.QtGui import QStandardItemModel, QDropEvent, QResizeEvent
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QTableView, QHeaderView, QAbstractItemView
 
 
@@ -30,11 +30,7 @@ class GridView(QTableView):
 
         self.cell_width = cell_width
         self.cell_height = cell_height
-
-        self.setFixedWidth(cols * self.cell_width + 4 + 17)
-        # You have to add 4 pixels to make sure there's not sideways scroll
-        # You have to add 17 to account for the vertical scroll bar
-        # I hate this so much but i'm not writing a resize event method
+        self.max_cols = cols
 
         self.verticalHeader().hide()
         self.horizontalHeader().hide()
@@ -59,9 +55,10 @@ class GridView(QTableView):
         self.setAutoScroll(True)
         self.setAutoScrollMargin(50)
 
-        for i in range(rows):
-            for j in range(cols):
-                self.setIndexWidget(self.model().index(i, j), CellContainer())
+        self.add_containers()
+
+        self.adjust_dim()
+        self.set_widget_size()
 
     def rows(self) -> int:
         return self.model().rowCount()
@@ -80,10 +77,10 @@ class GridView(QTableView):
         return row * self.cols() + col
 
     def get_row(self, idx: int) -> int:
-        return idx // self.cols()
+        return 0 if self.cols() == 0 else idx // self.cols()
 
     def get_col(self, idx: int) -> int:
-        return idx % self.cols()
+        return 0 if self.cols() == 0 else idx % self.cols()
 
     def get_at_pos(self, row: int, col: int) -> Union[QWidget, None]:
         var = self.indexWidget(self.model().index(row, col))
@@ -108,6 +105,20 @@ class GridView(QTableView):
             else QAbstractItemView.SelectionMode.NoSelection
         )
 
+    def append_row(self):
+        self.model().insertRow(self.rows())
+        for i in range(self.cols()): self.setIndexWidget(self.model().index(self.rows() - 1, i), CellContainer())
+
+    def append_col(self):
+        self.model().insertColumn(self.cols())
+        for i in range(self.rows()): self.setIndexWidget(self.model().index(self.cols() - 1, i), CellContainer())
+
+    def delete_row(self, idx: int = -1):
+        self.model().removeRow((self.rows() - 1) if idx == -1 else idx)  # if idx == -1 then delete the last row
+
+    def delete_col(self, idx: int = -1):
+        self.model().removeColumn((self.cols() - 1) if idx == -1 else idx)  # if idx == -1 then delete the last col
+
     def dropEvent(self, event: QDropEvent) -> None:
         pos = event.pos()
         r = (pos.y() + self.verticalScrollBar().value()) // self.cell_height
@@ -117,6 +128,7 @@ class GridView(QTableView):
         end = self.get_idx(r, c)
         if self.get_at_idx(start) is None or self.get_at_idx(end) is None: return
         self.move_widget(start, end)
+        self.set_widget_size()
 
     def move_widget(self, start: int, end: int):
         if end > start:
@@ -149,24 +161,73 @@ class GridView(QTableView):
             lst.append(self.get_at_idx(i))
         return lst
 
+    def add_containers(self):
+        for i in range(self.rows()):
+            for j in range(self.cols()):
+                if self.indexWidget(self.model().index(i, j)) is None:
+                    self.setIndexWidget(self.model().index(i, j), CellContainer())
+
     def append(self, widget: QWidget):
         count: int = self.count()
+        if self.cols() == 0: self.append_col()
         if count % self.cols() == 0:
             self.model().insertRow(self.rows())
-            for i in range(self.cols()):
-                self.setIndexWidget(self.model().index(self.rows() - 1, i), CellContainer())
+            self.add_containers()
         self.set_at_idx(count, widget)
+        self.adjust_dim()
+        self.set_widget_size()
 
     def delete(self, idx: int):
+        count: int = self.count()
         elems = []
-        if idx >= self.count(): return
-        for i in range(idx + 1, self.count()):
+        if idx >= count: return
+        for i in range(idx + 1, count):
             elems.append(self.get_at_idx(i))
         i = idx
         for e in elems:
             self.set_at_idx(i, e)
-        if self.rows() > self.count() // self.cols():
+        self.setIndexWidget(self.model().index(self.get_row(count - 1), self.get_col(count - 1)), CellContainer())
+        if self.rows() > (count // self.cols() if count % self.cols() == 0 else count // self.cols() + 1):
             self.model().removeRow(self.rows() - 1)
+        self.adjust_dim()
+        self.set_widget_size()
+
+    def adjust_dim(self):
+        count: int = self.count()
+        cols: int = count
+        cols = self.max_cols if cols > self.max_cols else cols
+        cols = 1 if cols < 0 else cols
+        a_cols = 1 if cols == 0 else cols
+        elems = self.get_widget_array()
+        if cols > self.cols():
+            while cols > self.cols():
+                self.append_col()
+        elif cols < self.cols():
+            while cols < self.cols():
+                self.delete_col()
+        rows: int = count // a_cols
+        rows = rows if count % a_cols == 0 else rows + 1
+        if rows > self.rows():
+            while rows > self.rows():
+                self.append_row()
+        elif rows < self.rows():
+            while rows < self.rows():
+                self.delete_row()
+        self.add_containers()
+        for i in range(len(elems)):
+            self.set_at_idx(i, elems[i])
+        self.setFixedWidth(a_cols * self.cell_width + 4)
+
+    def set_widget_size(self):
+        if self.height() < (self.rows() * self.cell_height + 4) and self.width() % self.cell_width != (4 + 17):
+            self.setFixedWidth((self.width() // self.cell_width) * self.cell_width + 4 + 17)
+        elif self.height() > (self.rows() * self.cell_height + 4) and self.width() % self.cell_width != (4):
+            self.setFixedWidth((self.width() // self.cell_width) * self.cell_width + 4)
+        # self.setMaximumHeight((self.rows() if self.rows() > 0 else 1) * self.cell_height + 4)
+
+    def resizeEvent(self, event:QResizeEvent) -> None:
+        super().resizeEvent(event)
+        self.set_widget_size()
 
 
 def generate(widgets: list[QWidget], cols: int,
