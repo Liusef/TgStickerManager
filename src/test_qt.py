@@ -14,6 +14,7 @@ from PySide6.QtWidgets import QApplication, QWidget, QMainWindow, QVBoxLayout, Q
 from qasync import QEventLoop
 from src import assets
 from src.Qt.GridView import GridView
+from src.Qt.ClickWidget import ClickWidget
 
 
 class CellWidget(QWidget):
@@ -21,6 +22,7 @@ class CellWidget(QWidget):
         super().__init__()
         self.setLayout(QVBoxLayout())
         self.layout().setAlignment(Qt.AlignCenter)
+        self.name = name
 
         a = QLabel()
         a.setText(name)
@@ -33,7 +35,11 @@ class CellWidget(QWidget):
 
 
 def add(wid: GridView):
-    wid.append(CellWidget(f"Richard {wid.count()}", str(random())))
+    cw = CellWidget(f"Richard {wid.count()}", str(random()))
+    click = ClickWidget()
+    click.setCentralWidget(cw)
+    click.clicked.connect(lambda: print(f"hiya"))
+    wid.append(click)
 
 
 def delete(wid: GridView):
