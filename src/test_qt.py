@@ -56,7 +56,7 @@ def main():
     nest.setLayout(QVBoxLayout())
     nest.layout().setAlignment(Qt.AlignCenter)
 
-    gv = GridView(5, 10)
+    gv = GridView(5)
     n = QWidget()
     n.setLayout(QVBoxLayout())
     n.layout().setAlignment(Qt.AlignCenter)
