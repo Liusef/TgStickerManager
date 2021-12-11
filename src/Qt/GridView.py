@@ -106,6 +106,12 @@ class GridView(QTableView):
                 return i
             i += 1
 
+    def set_contents(self, nc: list[QWidget]):
+        for i in range(self.count()):
+            self.delete(0)
+        for q in nc:
+            self.append(q)
+
     def get_widget_array(self) -> list[QWidget]:
         lst = []
         for i in range(self.count()):

@@ -10,6 +10,7 @@ from qasync import asyncSlot
 import src
 from src import assets, gvars, utils
 from src.Qt.gui import generate_font, nest_widget, get_pixmap, Loading
+from src.Qt.pages.home import HomePage
 from src.Tg import auth
 
 
@@ -92,7 +93,7 @@ class TgLoginInputWidget(QStackedWidget):
 
             if await gvars.client.is_user_authorized():
                 info("You're signed in and ready to go!")
-                self.next(self.urloggedinyay_temp())
+                self.parentWidget().parentWidget().setCentralWidget(HomePage("Welcome Back!"))
             else:
                 self.next(self.page1())
 
@@ -237,7 +238,7 @@ class TgLoginInputWidget(QStackedWidget):
 
             if gvars.state == auth.SignInState.SIGNED_IN:
                 info('Signed in!')
-                self.next(self.urloggedinyay_temp())
+                self.parentWidget().parentWidget().setCentralWidget(HomePage())
 
         cont.clicked.connect(cont_clicked)
         code.returnPressed.connect(cont_clicked)

@@ -6,7 +6,7 @@ from telethon.tl.types import Document, DocumentAttributeImageSize, StickerSet, 
 from telethon.tl.types.messages import StickerSet as ParentSet
 from logging import debug, info, warning, error, critical
 from src import gvars, utils
-import tgapi
+from src.Tg import tgapi
 import jsonpickle
 
 
@@ -158,6 +158,7 @@ async def get_pack(sn: str, force_get_new: bool = False, force_redownload_sticke
     serialize_pack(tgpack)
     debug('creating tgpack.download_stickers coroutine and adding to the event loop')
     await tgpack.download_stickers()
+    if tgpack.thumb is not None: await tgpack.download_thumb()
     return tgpack
 
 
@@ -165,8 +166,8 @@ def serialize_pack(pack: TgStickerPack):
     # TODO Docstring
     info(f'Serializing Metadata for for {pack.sn} to local cache')
     jsonpickle.set_encoder_options('json', indent=4)
-    ser: str = jsonpickle.encode(pack, unpicklable=True, keys=True)
-    utils.write_txt(ser, gvars.CACHEPATH + pack.sn + os.sep, pack.sn, 'json')
+    utils.serialize(jsonpickle.encode(pack, unpicklable=True, keys=True),
+                    gvars.CACHEPATH + pack.sn + os.sep, pack.sn, '.json')
 
 
 def check_pack_saved(sn: str) -> bool:
@@ -178,5 +179,20 @@ def check_pack_saved(sn: str) -> bool:
 def deserialize_pack(sn: str) -> TgStickerPack:
     # TODO Docstring
     info(f'Deserializing pack {sn} from local cache')
-    ser: str = utils.read_txt(gvars.CACHEPATH + sn + os.sep + sn + '.json')
-    return jsonpickle.decode(ser, keys=True, classes=TgStickerPack)
+    utils.deserialize(gvars.CACHEPATH + sn + os.sep + sn + '.json', TgStickerPack)
+
+
+async def get_owned_packs() -> list[str]:
+    try:
+        lst = utils.deserialize(gvars.get_current_user_path() + gvars.PACKS_FNAME)
+        useless_var = lst[0] + ''
+        return lst
+    except:
+        pass
+    return await update_owned_packs()
+
+
+async def update_owned_packs() -> list[str]:
+    lst = await tgapi.get_owned_stickerset_shortnames()
+    utils.serialize(lst, gvars.get_current_user_path(), gvars.PACKS_FNAME, '')
+    return lst

@@ -4,7 +4,8 @@ import os
 from typing import Union
 
 from logging import debug, info, warning, error, critical
-from telethon.tl.types import Document, InputDocumentFileLocation, InputStickerSetShortName, TypeInputFile, Message
+from telethon.tl.types import Document, InputDocumentFileLocation, InputStickerSetShortName, TypeInputFile, Message, \
+    ReplyKeyboardHide
 from telethon.tl.types.messages import StickerSet
 from telethon.tl.functions.messages import GetStickerSetRequest
 
@@ -67,6 +68,7 @@ async def await_next_msg_id(current_id: int, user: str, delay: float = 0.1) -> M
     while True:
         msg: Message = await gvars.client.iter_messages(entity=user).__anext__()
         if msg.id != current_id: return msg
+        debug(f"Target message not found. Waiting for {delay} seconds...")
         await asyncio.sleep(delay)
 
 
@@ -75,6 +77,7 @@ async def await_next_msg_str(target_str: str, user: str, delay: float = 0.1) -> 
     while True:
         msg: Message = await gvars.client.iter_messages(entity=user).__anext__()
         if msg.message == target_str: return msg
+        debug(f"Target message not found. Waiting for {delay} seconds...")
         await asyncio.sleep(delay)
 
 
@@ -155,12 +158,15 @@ async def get_owned_stickerset_shortnames() -> list[str]:
     delay: float = 0.1
     info('Checking what stickersets are owned by the current user')
     debug(f'running src.Tg.tgapi.get_owned_stickerset_shortnames with delay {delay}')
-    await send_sb("/cancel")
-    await send_sb("/addsticker")
+    cmsg = await send_sb("/cancel")
+    await await_next_msg_id(cmsg.id, gvars.STICKERBOT)
+    cmsg = await send_sb("/addsticker")
     # TODO add logs
-    msg: Message = await await_next_msg_str("Choose the sticker pack you're interested in.", "stickers")
+    msg: Message = await await_next_msg_id(cmsg.id, gvars.STICKERBOT)
     sets: list[str] = []
-    if msg.reply_markup is None or msg.reply_markup.rows is None or len(msg.reply_markup.rows) == 0:
+    print(msg.stringify())
+    if msg.reply_markup is None or isinstance(msg.reply_markup, ReplyKeyboardHide) \
+            or msg.reply_markup.rows is None or len(msg.reply_markup.rows) == 0:
         return sets
     for r in msg.reply_markup.rows:
         for b in r.buttons:

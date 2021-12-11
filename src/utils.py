@@ -3,6 +3,7 @@ from logging import debug, info, warning, error, critical
 import os
 import sys
 
+import jsonpickle
 import phonenumbers
 from telethon.tl.tlobject import TLObject
 from telethon.tl.types import Document, DocumentAttributeFilename
@@ -83,8 +84,8 @@ def write_txt(txt: str, path: str, fname: str, ext: str, encode: str = 'utf8'):
     :param fname: The filename of the file to write to
     :return: None
     """
+    ext = ('.' + ext) if (len(ext) > 0 and ext[0] == '.') else ext
     debug(f'Writing text to {path}{fname}{ext}')
-    ext = ('.' + ext) if (len(ext) > 0) else ext
     f = open(check_path(path) + fname + ext, 'w', encoding=encode)
     f.write(txt)
     f.close()
@@ -120,6 +121,17 @@ def setup_logging(level: int, console: bool, file: bool, path: str = None):
         handlers=hnd
     )
 
+
+def serialize(obj: object, path: str, fname: str, ext: str):
+    jsonpickle.set_encoder_options('json', indent=4)
+    ser: str = jsonpickle.encode(obj, unpicklable=True, keys=True)
+    write_txt(ser, path, fname, ext)
+
+
+def deserialize(fpath: str, classes=None):
+    return jsonpickle.decode(read_txt(fpath), keys=True, classes=classes)
+
+
 def is_valid_phone(phone: str) -> bool:
     try:
         return phonenumbers.is_valid_number(phonenumbers.parse('+' + phone))
@@ -127,5 +139,8 @@ def is_valid_phone(phone: str) -> bool:
         info(f'{phone}: {e}')
         return False
 
+
 def format_phone(phone: str) -> str:
     return phonenumbers.format_number(phonenumbers.parse(phone), phonenumbers.PhoneNumberFormat.INTERNATIONAL)
+
+

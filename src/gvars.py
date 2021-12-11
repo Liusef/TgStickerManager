@@ -16,20 +16,24 @@ except Exception as e:
 api_id: int = apikeys.api_id
 api_hash: str = apikeys.api_hash
 
+# Constants
+CURRENT_USER: str = 'user'
+PACKS_FNAME: str = 'packs.json'
+
 # Paths
 DATAPATH: str = 'tgsticker' + os.sep  # Root program data path
-SESSIONPATH: str = DATAPATH + 'sessions' + os.sep  # Login session path
+USERSPATH: str = DATAPATH + 'users' + os.sep  # Login session path
 CACHEPATH: str = DATAPATH + 'cache' + os.sep  # Data Caching Path
 
 # Logging
 utils.setup_logging(
-    level=logging.INFO,
+    level=logging.DEBUG,
     console=True,
     file=True,
     path='debug.log'
 )
 
-utils.check_all_paths([DATAPATH, SESSIONPATH, CACHEPATH])  # Checking if all paths exist
+utils.check_all_paths([DATAPATH, USERSPATH, CACHEPATH])  # Checking if all paths exist
 
 # MIME Types
 MIME: dict[str, str] = {
@@ -43,12 +47,21 @@ MIME: dict[str, str] = {
 STICKERBOT: str = 'Stickers'  # Sticker bot   : @Stickers
 
 
+# Helper methods to get paths without long string concatenation garbage
+def get_user_path(name: str) -> str:
+    return utils.check_path(USERSPATH + name + os.sep)
+
+
+def get_current_user_path() -> str:
+    return get_user_path(CURRENT_USER)
+
+
 # Telegram client object to make requests and receive data
 def get_client(name: str) -> tgclient:
-    return tgclient(SESSIONPATH + name, api_id, api_hash)
+    return tgclient(get_user_path(name) + name, api_id, api_hash)
 
 
-client: tgclient = get_client('user')
+client: tgclient = get_client(CURRENT_USER)
 
 # SignInState object to track the state of the telegram client
 state: SignInState = SignInState.NULL
