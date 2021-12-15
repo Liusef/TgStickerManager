@@ -80,7 +80,7 @@ def main():
     widget.setWindowIcon(QIcon(get_pixmap(assets, "app.png")))
     widget.setWindowTitle("PLACEHOLDER")
     widget.setCentralWidget(login.TgLoginWidget())
-    widget.resize(900, 600)
+    widget.resize(1000, 750)
 
     with QEventLoop(app) as loop:
         widget.show()
