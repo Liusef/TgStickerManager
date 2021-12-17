@@ -136,6 +136,7 @@ def generate_thumb(sset: Union[ParentSet, StickerSet]) -> Union[TgPackThumb, Non
     if isinstance(sset, ParentSet): sset = sset.set
     if sset.thumbs is None or len(sset.thumbs) == 0 or sset.thumb_version is None: return None
     ps: PhotoSize = sset.thumbs[0]
+    if type(ps) != PhotoSize: return None
     return TgPackThumb(sset.short_name, ps.h, ps.w, ps.size, sset.thumb_dc_id, sset.thumb_version)
 
 
