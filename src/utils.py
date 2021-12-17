@@ -75,7 +75,7 @@ def read_txt(file: str) -> str:
 
 
 # TODO Does this even work lmfao
-def write_txt(txt: str, path: str, fname: str, ext: str, encode: str = 'utf8'):
+def write_txt(txt: str, path: str, fname: str, encode: str = 'utf8'):
     """
     Writes text to a file
 
@@ -84,9 +84,8 @@ def write_txt(txt: str, path: str, fname: str, ext: str, encode: str = 'utf8'):
     :param fname: The filename of the file to write to
     :return: None
     """
-    ext = ('.' + ext) if (len(ext) > 0 and ext[0] == '.') else ext
-    debug(f'Writing text to {path}{fname}{ext}')
-    f = open(check_path(path) + fname + ext, 'w', encoding=encode)
+    debug(f'Writing text to {path}{fname}')
+    f = open(check_path(path) + fname, 'w', encoding=encode)
     f.write(txt)
     f.close()
 
@@ -122,14 +121,14 @@ def setup_logging(level: int, console: bool, file: bool, path: str = None):
     )
 
 
-def serialize(obj: object, path: str, fname: str, ext: str):
+def serialize(obj: object, path: str, fname: str):
     jsonpickle.set_encoder_options('json', indent=4)
     ser: str = jsonpickle.encode(obj, unpicklable=True, keys=True)
-    write_txt(ser, path, fname, ext)
+    write_txt(ser, path, fname)
 
 
-def deserialize(fpath: str, classes=None):
-    return jsonpickle.decode(read_txt(fpath), keys=True, classes=classes)
+def deserialize(fpath: str):
+    return jsonpickle.decode(read_txt(fpath), keys=True)
 
 
 def is_valid_phone(phone: str) -> bool:

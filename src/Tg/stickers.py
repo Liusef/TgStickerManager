@@ -136,7 +136,7 @@ def generate_thumb(sset: Union[ParentSet, StickerSet]) -> Union[TgPackThumb, Non
     if isinstance(sset, ParentSet): sset = sset.set
     if sset.thumbs is None or len(sset.thumbs) == 0 or sset.thumb_version is None: return None
     ps: PhotoSize = sset.thumbs[0]
-    if type(ps) != PhotoSize: return None
+    if type(ps) != PhotoSize: return None # TODO thumbs can include PhotoPathObject, account for this!!
     return TgPackThumb(sset.short_name, ps.h, ps.w, ps.size, sset.thumb_dc_id, sset.thumb_version)
 
 
@@ -166,9 +166,7 @@ async def get_pack(sn: str, force_get_new: bool = False, force_redownload_sticke
 def serialize_pack(pack: TgStickerPack):
     # TODO Docstring
     info(f'Serializing Metadata for for {pack.sn} to local cache')
-    jsonpickle.set_encoder_options('json', indent=4)
-    utils.serialize(jsonpickle.encode(pack, unpicklable=True, keys=True),
-                    gvars.CACHEPATH + pack.sn + os.sep, pack.sn, '.json')
+    utils.serialize(pack, gvars.CACHEPATH + pack.sn + os.sep, pack.sn + '.json')
 
 
 def check_pack_saved(sn: str) -> bool:
@@ -180,7 +178,7 @@ def check_pack_saved(sn: str) -> bool:
 def deserialize_pack(sn: str) -> TgStickerPack:
     # TODO Docstring
     info(f'Deserializing pack {sn} from local cache')
-    utils.deserialize(gvars.CACHEPATH + sn + os.sep + sn + '.json', TgStickerPack)
+    utils.deserialize(gvars.CACHEPATH + sn + os.sep + sn + '.json')
 
 
 async def get_owned_packs() -> list[str]:
@@ -195,5 +193,5 @@ async def get_owned_packs() -> list[str]:
 
 async def update_owned_packs() -> list[str]:
     lst = await tgapi.get_owned_stickerset_shortnames()
-    utils.serialize(lst, gvars.get_current_user_path(), gvars.PACKS_FNAME, '')
+    utils.serialize(lst, gvars.get_current_user_path(), gvars.PACKS_FNAME)
     return lst
