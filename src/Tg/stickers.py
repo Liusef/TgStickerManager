@@ -175,10 +175,10 @@ def check_pack_saved(sn: str) -> bool:
     return utils.check_file(gvars.CACHEPATH + sn + os.sep + sn + '.json')
 
 
-def deserialize_pack(sn: str) -> TgStickerPack:
+def deserialize_pack(sn: str):
     # TODO Docstring
     info(f'Deserializing pack {sn} from local cache')
-    utils.deserialize(gvars.CACHEPATH + sn + os.sep + sn + '.json')
+    return utils.deserialize(gvars.CACHEPATH + sn + os.sep + sn + '.json')
 
 
 async def get_owned_packs() -> list[str]:
