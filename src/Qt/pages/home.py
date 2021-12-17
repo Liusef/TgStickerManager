@@ -104,7 +104,7 @@ class HomePage(QWidget):
         buttons.setContentsMargins(20, 20, 20, 20)
 
         add = QPushButton()
-        add.setText("Add")
+        add.setText("New")
         add.clicked.connect(self.add_page)
         add.setFont(gui.generate_font(add, 11, QFont.Medium))
         add.setFixedSize(100, 30)
