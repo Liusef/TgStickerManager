@@ -13,8 +13,13 @@ from src.Qt.gui import generate_font, nest_widget, get_pixmap, Loading
 from src.Qt.pages.home import HomePage
 from src.Tg import auth
 
+# TODO Do proper docstrings
+
 
 class TgLoginWidget(QWidget):
+    """
+    The login page widget. Instantiate this!!
+    """
     def __init__(self):
         super().__init__()
         layout = QVBoxLayout()

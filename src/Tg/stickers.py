@@ -11,9 +11,16 @@ import jsonpickle
 
 
 class TgSticker:
-    # TODO Docstring
+    """
+    A Telegram Sticker (Does not include sticker data)
+    """
     def __init__(self, doc: Document, emojis: str, parent_sn: str):
-        # TODO Docstring
+        """
+        Instantiates a TgSticker Object
+        :param doc: The sticker document from Telegram
+        :param emojis: The emojis associated with this sticker
+        :param parent_sn: The shortname of the sticker pack this sticker belongs to
+        """
         debug(f'Instantiating TgSticker Object under stickerset {parent_sn}')
         self.doc_id: int = doc.id
         self.doc_access_hash: int = doc.access_hash
@@ -29,7 +36,10 @@ class TgSticker:
         self.emojis: str = emojis
 
     def get_loc(self) -> InputDocumentFileLocation:
-        # TODO Docstring
+        """
+        Gets the InputDocumentFileLocation of the sticker image
+        :return: The InputDocumentFileLocation of the sticker image from telegram
+        """
         return InputDocumentFileLocation(
             self.doc_id,
             self.doc_access_hash,
@@ -39,26 +49,46 @@ class TgSticker:
 
 
 class TgPackThumb:
-    # TODO Docstring
-    def __init__(self, parent_shortname: str, height: int, width: int, size: int, dc_id: int, version: int):
-        # TODO Docstring
-        debug(f'TgPackThumb object for set {parent_shortname} instantiated')
-        self.parent_sn: str = parent_shortname
+    """
+    A Telegram Sticker Pack Thumbnail
+    """
+    def __init__(self, parent_sn: str, height: int, width: int, size: int, dc_id: int, version: int):
+        """
+        Instantiates a TgPackThumb object
+        :param parent_sn: The shortname of the pack this thumbnail belongs to
+        :param height: The height of the thumbnail
+        :param width: The width of the thumbnail
+        :param size: The size of the thumbnail (file size i think?)
+        :param dc_id: The DC_ID of the thumbnail
+        :param version: The Version of the thumbnail
+        """
+        debug(f'TgPackThumb object for set {parent_sn} instantiated')
+        self.parent_sn: str = parent_sn
         self.height: int = height
         self.width: int = width
         self.size: int = size
         self.dc_id: int = dc_id
         self.version: int = version
 
-    def get_loc(self):
-        # TODO Docstring
+    def get_loc(self) -> InputStickerSetThumb:
+        """
+        Gets the InputLocation of the telegram thumbnail
+        :return:
+        """
         return InputStickerSetThumb(InputStickerSetShortName(self.parent_sn), self.version)
 
 
 class TgStickerPack:
-    # TODO Docstring
+    """
+    A Telegram Sticker Pack
+    """
     def __init__(self, sset: StickerSet, stickers: list[TgSticker], thumb: Union[TgPackThumb, None]):
-        # TODO Docstring
+        """
+        Instantiates a TgStickerPack object
+        :param sset: The stickerset object from Telegram
+        :param stickers: A list of TgSticker objects that belong to this Sticker Pack
+        :param thumb: The thumbnail of this sticker pack
+        """
         debug(f'TgStickerPack object for set {sset.short_name} instantiated')
         self.id: int = sset.id
         self.access_hash: int = sset.access_hash
@@ -71,7 +101,10 @@ class TgStickerPack:
         self.stickers: list[TgSticker] = stickers
 
     async def download_stickers(self):
-        # TODO Docstring
+        """
+        Downloads all the stickers in this stickerpack to the cache folder associated with this object
+        :return:
+        """
         info(f'Downloading all stickers in pack {self.sn} to cache')
         debug(f'creating src.Tg.tgapi.download_doclist coroutine and adding to the event loop')
         await tgapi.download_doclist(
@@ -82,7 +115,10 @@ class TgStickerPack:
         )
 
     async def download_thumb(self):
-        # TODO Docstring
+        """
+        Downloads the thumbnail of this stickerpack to the cache folder
+        :return:
+        """
         if self.thumb is None:
             warning("This pack doesn't have a dedicated thumb! Use the first sticker in the pack as the thumbnail\n")
             return
@@ -95,6 +131,10 @@ class TgStickerPack:
             )
 
     async def update_meta(self):
+        """
+        Redownloads the metadata associated with this sticker pack
+        :return:
+        """
         info(f'Updating metadata for pack {self.sn}')
         npack: TgStickerPack = generate(await tgapi.get_stickerset(self.sn))
         self.id = npack.id
@@ -112,13 +152,22 @@ class TgStickerPack:
         serialize_pack(self)
 
     async def update_all(self):
+        """
+        Upadtes all information associated with this sticker pack, including redownloading all stickers
+        :return:
+        """
         info(f'Updating all cached information for pack {self.sn}')
         await self.update_meta()
         await self.download_stickers()
 
 
 def generate(sset: ParentSet) -> TgStickerPack:
-    # TODO Docstring
+    """
+    Generates a TgStickerPack object from the StickerSet object from telegram
+    :param sset: The StickerSet object from telegram
+    :return: The TgStickerPack object assocated with the input StickerSet object
+    """
+    info(f"Generating TgStickerPack object for StickerSet {sset.set.short_name}")
     e: dict[int, str] = {}
     p: StickerPack
     for p in sset.packs:
@@ -132,8 +181,13 @@ def generate(sset: ParentSet) -> TgStickerPack:
 
 
 def generate_thumb(sset: Union[ParentSet, StickerSet]) -> Union[TgPackThumb, None]:
-    # TODO Docstring
+    """
+    Generates the TgPackThumb object from the telegram StickerSet object
+    :param sset: The telegram StickerSet object
+    :return: a TgPackThumb associated with the input StickerSet
+    """
     if isinstance(sset, ParentSet): sset = sset.set
+    info(f"Generating TgPackThumb object for {sset.short_name}")
     if sset.thumbs is None or len(sset.thumbs) == 0 or sset.thumb_version is None: return None
     ps: PhotoSize = sset.thumbs[0]
     if type(ps) != PhotoSize: return None # TODO thumbs can include PhotoPathObject, account for this!!
@@ -141,7 +195,15 @@ def generate_thumb(sset: Union[ParentSet, StickerSet]) -> Union[TgPackThumb, Non
 
 
 async def get_pack(sn: str, force_get_new: bool = False, force_redownload_stickers: bool = False) -> TgStickerPack:
-    # TODO Docstring
+    """
+    Gets a TgStickerPack of a specified short name. If the pack is already cached on the user's local machine, then
+    the program will retrieve from the cache. If it is not saved, or the method is flagged to download a new copy, then
+    The program will call Telegram's servers and generate a new copy and cache it.
+    :param sn: The shortname of the desired stickerpack
+    :param force_get_new: If True, forces the system to redownload the StickerSet object from Telegram
+    :param force_redownload_stickers: If True, forces the system to redownload all sticker pack images to cache
+    :return:
+    """
     info(f'Generating local data for pack {sn}')
     if force_redownload_stickers and not force_get_new:
         debug('creating new TgStickerPack object. download_stickers coroutine created and added to the event loop')
@@ -164,24 +226,40 @@ async def get_pack(sn: str, force_get_new: bool = False, force_redownload_sticke
 
 
 def serialize_pack(pack: TgStickerPack):
-    # TODO Docstring
+    """
+    Serializes a sticker pack
+    :param pack: The pack to serialize
+    :return: None
+    """
     info(f'Serializing Metadata for for {pack.sn} to local cache')
     utils.serialize(pack, gvars.CACHEPATH + pack.sn + os.sep, pack.sn + '.json')
 
 
 def check_pack_saved(sn: str) -> bool:
-    # TODO Docstring
+    """
+    Checks if a pack is saved on the local system
+    :param sn: The shortname of the desired pack
+    :return: Whether the pack is saved or not
+    """
     info(f'Checking if pack {sn} is saved on the local cache')
     return utils.check_file(gvars.CACHEPATH + sn + os.sep + sn + '.json')
 
 
-def deserialize_pack(sn: str):
-    # TODO Docstring
+def deserialize_pack(sn: str) -> TgStickerPack:
+    """
+    Deserializes the desired sticker pack
+    :param sn: The shortname of the desired pack
+    :return: The TgStickerPack object
+    """
     info(f'Deserializing pack {sn} from local cache')
     return utils.deserialize(gvars.CACHEPATH + sn + os.sep + sn + '.json')
 
 
 async def get_owned_packs() -> list[str]:
+    """
+    Gets all the sticker packs that the user owns
+    :return: A list of strs containing the shortnames of all the user's owned packs
+    """
     try:
         lst = utils.deserialize(gvars.get_current_user_path() + gvars.PACKS_FNAME)
         useless_var = lst[0] + ''
@@ -192,6 +270,10 @@ async def get_owned_packs() -> list[str]:
 
 
 async def update_owned_packs() -> list[str]:
+    """
+    Gets all the sticker packs that the user owns but bypasses the caches and saves a new copy
+    :return: A list of strs containing the shortnames of all the users's owned packs
+    """
     lst = await tgapi.get_owned_stickerset_shortnames()
     utils.serialize(lst, gvars.get_current_user_path(), gvars.PACKS_FNAME)
     return lst

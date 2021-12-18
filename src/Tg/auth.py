@@ -77,6 +77,10 @@ async def signin_cli():
 
 
 async def ensure_connected():
+    """
+    Ensures that the TelegramClient is connected to telegram
+    :return: None
+    """
     info('Ensuring that client is connected to Telegram')
     await gvars.client.connect()
     gvars.state = SignInState.CONNECTED_NSI
@@ -104,10 +108,10 @@ async def signin_handler_phone(phone: str):
 
 
 async def signin_handler_code(phone: str, verif: str):
-    # TODO Update docstring to include new args
+
     """
     Sends sign in request to telegram using the signin verification code
-
+    :param phone: The phone number of the user to sign in to
     :param verif: The verification code sent to the user via @Telegram
     :return: None
     """
@@ -166,23 +170,40 @@ async def signin_handler_request_new_code(phone: str):
 
 
 def awaiting_code():
+    """
+    Sets the state to SignInState.AWAITING_CODE
+    :return: None
+    """
     info('tgclient.sign_in needs a code to continue: verification code sent to your telegram account')
     debug('SignInState set to AWAITING_CODE')
     gvars.state = SignInState.AWAITING_CODE
 
 
 def signed_in():
+    """
+    Sets the state to SignInState.SIGNED_IN
+    :return: None
+    """
     info('tgclient.sign_in was successful. User is now authorized to make Telegram API calls!')
     gvars.state = SignInState.SIGNED_IN
     debug('SignInState set to SIGNED_IN')
 
 
 def flood_wait(e: BaseException):
+    """
+    Sets the state to SignInState.FLOOD_WAIT_ERR
+    :return: None
+    """
     error('tgclient.sign_in threw a FloodWaitError. This could mean that too many requests were sent')
     error(f'{str(e)}')
     gvars.state = SignInState.FLOOD_WAIT_ERR
 
 
 def unexpected(var):
+    """
+    Call this method when the program hits an unexpected signin state
+    :param var: The returned value from Telegram
+    :return: None
+    """
     critical('tgclient.sign_in returned an unexpected value and the program is unable to continue')
     utils.raise_exception_no_err(var)

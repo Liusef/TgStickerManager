@@ -16,6 +16,8 @@ from src.Tg import tgapi
 from src.Tg import stickers
 from src.Tg.stickers import TgStickerPack
 
+# TODO Do proper docstrings on this file
+
 
 class PackWidget(ClickWidget):
     def __init__(self, pack: TgStickerPack):
@@ -85,6 +87,9 @@ class PackGridView(QWidget):
 
 
 class HomePage(QWidget):
+    """
+    The main Homepage widget. Instantiate this one!!
+    """
     def __init__(self, title: str = "Telegram Stickers"):
         super().__init__()
         self.setLayout(QVBoxLayout())

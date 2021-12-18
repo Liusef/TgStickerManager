@@ -6,6 +6,10 @@ from src.Qt import gui
 
 
 def main():
+    """
+    The main method!
+    :return: None
+    """
     info('===== Main method run =====')
     gui.main()
 

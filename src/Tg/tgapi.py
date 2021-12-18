@@ -13,31 +13,54 @@ from src import gvars, utils
 
 
 class DocName:
-    # TODO Docstrings
+    """
+    A class representing the name of a Telegram Document
+    """
     def __init__(self, fname: str, mime: str):
+        """
+        Instantiates a DocName object
+        :param fname: The filename of the file
+        :param mime: The MIME type of the file
+        """
         debug(f'Creating DocName object with fname:{fname} and mime:{mime}')
         self.fname: str = fname if fname is not None else ""
         self.mime: str = mime if mime is not None else ""
 
     def ext(self) -> str:
+        """
+        Gets the file extension associated with the file. If a MIME type is present, it retrieves this from a MIME type
+        table. Else, it attempts to get the extension from the filename itself. Otherwise it omits the extension
+        :return: The extension of the file as a string
+        """
         idx: int = self.mime.find('/') + 1
         if (len(self.mime) > 0) and ((m := gvars.MIME.get(self.mime, self.mime[idx:])) != ''):
             return m
         return utils.get_path_ext(self.fname, '')
 
     def filename(self) -> str:
+        """
+        Returns the name of the file excluding the extension
+        :return: the name of the file excluding the extension
+        """
         idx: int = self.fname.find('.')
         return self.fname[0:idx if idx != -1 else len(self.fname)]
 
 
 def derive_docname(doc: Document) -> DocName:
-    # TODO Docstring
+    """
+    Generates a DocName object
+    :param doc:
+    :return:
+    """
     return DocName(utils.get_attr_filename(doc, ""), doc.mime_type)
 
 
 async def send_sb(inpt: Union[str, Document, TypeInputFile]) -> Message:
-    # TODO Docstring
-
+    """
+    Sends whatever is input to Sticker bot
+    :param inpt: The input to send to Sticker bot
+    :return: The Message file that Telegram returns
+    """
     if isinstance(inpt, str):
         info('Sending message to stickerbot')
         debug(f'message: {inpt}')
@@ -49,7 +72,11 @@ async def send_sb(inpt: Union[str, Document, TypeInputFile]) -> Message:
 
 
 async def upload_file(path: str) -> TypeInputFile:
-    # TODO Docstring
+    """
+    Uploads a file to Telegram but does not send it.
+    :param path: The path of the file on the local system
+    :return: The Input Location of the file on Telegram's servers
+    """
     if not os.path.exists(path):
         critical(f'Could not find file at {path}, program cannot continue')
         raise Exception("File does not exist")
@@ -64,7 +91,13 @@ async def upload_callback(sent_bytes: int, total_bytes: int):
 
 
 async def await_next_msg_id(current_id: int, user: str, delay: float = 0.1) -> Message:
-    # TODO Docstring
+    """
+    Waits for the next message and then continues
+    :param current_id: The ID of the current message
+    :param user: The name (not nickname) of the chat you want to search
+    :param delay: The amount of time to wait between checking (seconds)
+    :return: The new message received
+    """
     while True:
         msg: Message = await gvars.client.iter_messages(entity=user).__anext__()
         if msg.id != current_id: return msg
@@ -73,7 +106,13 @@ async def await_next_msg_id(current_id: int, user: str, delay: float = 0.1) -> M
 
 
 async def await_next_msg_str(target_str: str, user: str, delay: float = 0.1) -> Message:
-    # TODO Docstring
+    """
+    Waits for a message to show with certain message contents
+    :param target_str: The target message contents to search for
+    :param user: The name (not nickname) of the chat you want to search
+    :param delay: The amount of time to wait between checking (seconds)
+    :return: The new message received
+    """
     while True:
         msg: Message = await gvars.client.iter_messages(entity=user).__anext__()
         if msg.message == target_str: return msg
@@ -97,19 +136,30 @@ def get_document_loc(doc: Document) -> InputDocumentFileLocation:
 
 
 async def download_doc(doc: InputDocumentFileLocation,  meta: DocName, path: str, fname_is_id: bool):
-    # TODO Docstring
+    """
+    Downloads a Telegram document to the local device
+    :param doc: The File location on Telegram's servers
+    :param meta: The DocName metadata
+    :param path: The folder on the local device to save to
+    :param fname_is_id: Whether or not to set the local filename to the document id
+    :return: None
+    """
     filename: str = str(doc.id) if fname_is_id else meta.filename()
-    ext: str = meta.ext()
-    ext = ('.' + ext) if (len(ext) > 0) else ext
     info(f'Downloading Telegram document with id: {doc.id} to path: {path}{filename}.{meta.ext()}')
     await asyncio.create_task(gvars.client.download_file(doc, utils.check_path(path) + filename + '.' + meta.ext()))
 
 
 async def download_doc_nloc(doc: Document, path: str, fname_is_id: bool):
-    # TODO Docstring
+    """
+    Downloads a Telegram document to the local device using a Telegram Document object instead of Location
+    :param doc: The Telegram Document to download
+    :param path: The path on the local system to download to
+    :param fname_is_id: Whether or not to set the local filename to the document id
+    :return: None
+    """
     await download_doc(
         get_document_loc(doc),
-        DocName(utils.get_attr_filename(doc), doc.mime_type),
+        derive_docname(doc),
         path,
         fname_is_id
     )
@@ -118,7 +168,14 @@ async def download_doc_nloc(doc: Document, path: str, fname_is_id: bool):
 # TODO Restrict number of concurrent downloads
 async def download_doclist(doc_arr: list[InputDocumentFileLocation], meta_arr: list[DocName],
                            path: str, fname_is_id: bool):
-    # TODO Docstring
+    """
+    Downloads a list of Documents to the local device
+    :param doc_arr: The list of File Locations on Telegram's Servers
+    :param meta_arr: A list of DocName metadata corresponding to the File Locations in doc_arr
+    :param path: The path on the local system to download to
+    :param fname_is_id: Whether or not to set the local filename to the document id
+    :return: None
+    """
     tasklst: list[asyncio.Task] = []
     utils.check_path(path)
 
@@ -134,7 +191,13 @@ async def download_doclist(doc_arr: list[InputDocumentFileLocation], meta_arr: l
 
 
 async def download_doclist_nloc(doc_arr: list[Document], path: str, fname_is_id: bool):
-    # TODO Docstring
+    """
+    Downloads a list of Documents to the local device without using the File Locations
+    :param doc_arr: The list of Documents to download
+    :param path: The path on the local system to download to
+    :param fname_is_id: Whether or not to set the local file to the document id
+    :return: None
+    """
     await download_doclist([get_document_loc(d) for d in doc_arr], [derive_docname(d) for d in doc_arr],
                            path, fname_is_id)
 
@@ -151,10 +214,14 @@ async def get_stickerset(short: str) -> StickerSet:
     return await gvars.client(GetStickerSetRequest(query))
 
 
+# This method is super sketchy and might not work if you have a lot of packs but idk how to do it better oops
 async def get_owned_stickerset_shortnames() -> list[str]:
-    # TODO Docstring
-    # This method is really sketchy and it might not work if you have a ton of sticker packs but its the best
-    # way to do it that I have right now
+    """
+    Gets a list of all the sticker packs that the user owns.
+
+    Works by messaging @Stickers to add a sticker to a pack and looking at the reply keyboard that the bot returns
+    :return: A list of strings that contains the shortnames of all the packs
+    """
     delay: float = 0.1
     info('Checking what stickersets are owned by the current user')
     debug(f'running src.Tg.tgapi.get_owned_stickerset_shortnames with delay {delay}')

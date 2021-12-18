@@ -37,7 +37,11 @@ def get_path_ext(path: str, fallback_ext: str = '') -> str:
 
 
 def check_file(file: str) -> bool:
-    # TODO Docstring
+    """
+    Checks if a file exists at a path
+    :param file: The path to the file
+    :return: Whether the file exists at the given location
+    """
     debug(f'Checking if {file} exists')
     return os.path.exists(file)
 
@@ -68,13 +72,19 @@ def check_all_paths(paths: list[str]):
 
 
 def read_txt(file: str) -> str:
-    # TODO Docstring
+    """
+    Reads text from a specified file.
+
+    PLEASE NOTE this method DOES NOT check if the file already exists.
+
+    :param file: The path to the file
+    :return: The plain text in the file
+    """
     debug(f'Reading text from {file}')
     with open(file, 'r') as f:
         return f.read()
 
 
-# TODO Does this even work lmfao
 def write_txt(txt: str, path: str, fname: str, encode: str = 'utf8'):
     """
     Writes text to a file
@@ -91,7 +101,12 @@ def write_txt(txt: str, path: str, fname: str, encode: str = 'utf8'):
 
 
 def get_doc_attr(doc: Document, attr_type: type):
-    # TODO add docstring
+    """
+    Gets the first instance of a Telethon Document Attribute of a specified type
+    :param doc: The document containing the desired attributes
+    :param attr_type: The type of the attribute to extract
+    :return: (Hopefully) The desired document attribute
+    """
     lst: list[attr_type] = [o for o in doc.attributes if isinstance(o, attr_type)]
     if (len(lst) == 0): return None
     return lst[0]
@@ -110,6 +125,7 @@ def get_attr_filename(f: Document, fallback: str = "") -> str:
     return attr.file_name
 
 
+# TODO Determine if this method is even necessary, logging is initialized in the gvars.py file
 def setup_logging(level: int, console: bool, file: bool, path: str = None):
     hnd = []
     hnd.append(logging.StreamHandler(sys.stdout)) if console else None
@@ -122,24 +138,54 @@ def setup_logging(level: int, console: bool, file: bool, path: str = None):
 
 
 def serialize(obj: object, path: str, fname: str):
+    """
+    Non-destructively serializes an object to a file
+    :param obj: The object to be serialized
+    :param path: The path where you want the serialized object to go
+    :param fname: The filename of the serialized object
+    :return: None
+    """
+    info(f"Serializing {type(obj)} object to {path}{fname}")
     jsonpickle.set_encoder_options('json', indent=4)
     ser: str = jsonpickle.encode(obj, unpicklable=True, keys=True)
     write_txt(ser, path, fname)
 
 
 def deserialize(fpath: str):
+    """
+    Deserializes object at path.
+
+    PLEASE NOTE This method DOES NOT check if the path is valid NOR does it check if the path actually contains valid
+    json
+
+    :param fpath: The path of the file to deserialize
+    :return: The deserialized object
+    """
+    info(f"Attempting to deserialize object from {fpath}")
     return jsonpickle.decode(read_txt(fpath), keys=True)
 
 
 def is_valid_phone(phone: str) -> bool:
+    """
+    Checks if an input phone number is valid
+    :param phone: The phone number to check
+    :return: Whether the phone number was valid
+    """
     try:
+        info(f"Parsing phone number: {phone}")
         return phonenumbers.is_valid_number(phonenumbers.parse('+' + phone))
     except phonenumbers.phonenumberutil.NumberParseException as e:
-        info(f'{phone}: {e}')
+        warning(f'{phone}: {e}')
         return False
 
 
 def format_phone(phone: str) -> str:
+    """
+    Formats the input phone number to an international standardized format
+    :param phone: The phone number to format. Must already be a valid phone number
+    :return: The formatted version of the phone number
+    """
+    info(f"Formatting phone number {phone}")
     return phonenumbers.format_number(phonenumbers.parse(phone), phonenumbers.PhoneNumberFormat.INTERNATIONAL)
 
 
