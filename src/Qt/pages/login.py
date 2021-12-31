@@ -38,12 +38,12 @@ class TgLoginWidget(QWidget):
         logo_w.layout().setAlignment(Qt.AlignCenter)
         layout.addWidget(logo_w)
 
-        layout.addWidget(TgLoginInputWidget())
+        layout.addWidget(_TgLoginInputWidget())
 
         layout.addStretch()
 
 
-class TgLoginInputWidget(QStackedWidget):
+class _TgLoginInputWidget(QStackedWidget):
     def __init__(self):
         super().__init__()
         self.insertWidget(0, self.page0())
@@ -66,13 +66,13 @@ class TgLoginInputWidget(QStackedWidget):
 
         title = QLabel()
         title.setText("Welcome!")
-        title.setFont(generate_font(title, 30, QFont.Bold))
+        title.setFont(generate_font(30, QFont.Bold))
         title.setAlignment(Qt.AlignHCenter)
         layout.addWidget(title)
 
         desc = QLabel()
         desc.setText('This app needs to connect to Telegram\'s servers to continue.\nClick below to connect.')
-        desc.setFont(generate_font(desc, 14, QFont.Medium))
+        desc.setFont(generate_font(14, QFont.Medium))
         desc.setAlignment(Qt.AlignHCenter)
         layout.addWidget(desc)
 
@@ -80,7 +80,7 @@ class TgLoginInputWidget(QStackedWidget):
 
         connect = QPushButton()
         connect.setText("Connect")
-        connect.setFont(generate_font(connect, 12))
+        connect.setFont(generate_font(12))
         connect.setFixedWidth(150)
         layout.addWidget(nest_widget(connect))
 
@@ -113,27 +113,27 @@ class TgLoginInputWidget(QStackedWidget):
 
         title = QLabel()
         title.setText("Sign in to Telegram")
-        title.setFont(generate_font(title, 30, QFont.Bold))
+        title.setFont(generate_font(30, QFont.Bold))
         title.setAlignment(Qt.AlignHCenter)
         layout.addWidget(title)
 
         desc = QLabel()
         desc.setText("Please enter your phone number starting with the country code.\nNo extra characters.")
-        desc.setFont(generate_font(desc, 14, QFont.Medium))
+        desc.setFont(generate_font(14, QFont.Medium))
         desc.setAlignment(Qt.AlignHCenter)
         layout.addWidget(desc)
 
         layout.addSpacing(16)
 
         phone = QLineEdit()
-        phone.setFont(generate_font(phone, 14, QFont.DemiBold))
+        phone.setFont(generate_font(14, QFont.DemiBold))
         phone.setAlignment(Qt.AlignHCenter)
         phone.setMaximumWidth(300)
         layout.addWidget(nest_widget(phone))
 
         cont = QPushButton()
         cont.setText("Next")
-        cont.setFont(generate_font(cont, 12))
+        cont.setFont(generate_font(12))
         cont.setFixedWidth(150)
         cont.setEnabled(False)
         layout.addWidget(nest_widget(cont))
@@ -172,13 +172,13 @@ class TgLoginInputWidget(QStackedWidget):
 
         title = QLabel()
         title.setText(utils.format_phone('+' + self.pn))
-        title.setFont(generate_font(title, 30, QFont.Bold))
+        title.setFont(generate_font(30, QFont.Bold))
         title.setAlignment(Qt.AlignHCenter)
         layout.addWidget(title)
 
         desc = QLabel()
         desc.setText("We've sent the code to the Telegram app on your\nother device or SMS.")
-        desc.setFont(generate_font(desc, 14, QFont.Medium))
+        desc.setFont(generate_font(14, QFont.Medium))
         desc.setAlignment(Qt.AlignHCenter)
         layout.addWidget(desc)
 
@@ -186,7 +186,7 @@ class TgLoginInputWidget(QStackedWidget):
         broke.setLayout(QHBoxLayout())
 
         ncode = QPushButton()
-        bfont = generate_font(ncode, 12)
+        bfont = generate_font(12)
         ncode.setFont(bfont)
         ncode.setText("New code?")
         ncode.setFixedWidth(150)
@@ -201,14 +201,14 @@ class TgLoginInputWidget(QStackedWidget):
         layout.addWidget(broke)
 
         code = QLineEdit()
-        code.setFont(generate_font(code, 14, QFont.DemiBold))
+        code.setFont(generate_font(14, QFont.DemiBold))
         code.setAlignment(Qt.AlignHCenter)
         code.setMaximumWidth(300)
         layout.addWidget(nest_widget(code))
 
         cont = QPushButton()
         cont.setText("Next")
-        cont.setFont(generate_font(cont, 12))
+        cont.setFont(generate_font(12))
         cont.setFixedWidth(150)
         cont.setEnabled(False)
         layout.addWidget(nest_widget(cont))
@@ -250,6 +250,7 @@ class TgLoginInputWidget(QStackedWidget):
 
         return widget
 
+    # TODO Delete this
     def urloggedinyay_temp(self) -> QWidget:
         widget = QWidget()
         widget.setLayout(QVBoxLayout())

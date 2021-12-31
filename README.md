@@ -9,9 +9,6 @@ Network requests will all time out when being called from a PySide6 button.
 Why does it do this? *I don't know*.
 Can I fix it? *I don't know*.
 
-Do I hate it? *Yes*. 
-Am I in severe pain and agony? *Always*.
-
 I hate Python.
 
 ## Setting up the project

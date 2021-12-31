@@ -99,7 +99,7 @@ class Loading(QWidget):
 
         label = QLabel()
         label.setText("Loading...")
-        label.setFont(generate_font(label, 14, QFont.DemiBold))
+        label.setFont(generate_font(14, QFont.DemiBold))
         label.setAlignment(Qt.AlignCenter)
 
         self.layout().addWidget(label)

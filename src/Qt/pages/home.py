@@ -19,7 +19,55 @@ from src.Tg.stickers import TgStickerPack
 # TODO Do proper docstrings on this file
 
 
-class PackWidget(ClickWidget):
+class HomePage(QWidget):
+    """
+    The main Homepage widget. Instantiate this one!!
+    """
+    def __init__(self, title: str = "Telegram Stickers"):
+        super().__init__()
+        self.setLayout(QVBoxLayout())
+        self.layout().setAlignment(Qt.AlignHCenter)
+
+        title = gui.basic_label(title, gui.generate_font(32, QFont.Bold))
+        title.setContentsMargins(20, 20, 20, 20)
+
+        self.layout().addWidget(gui.nest_widget(title, Qt.AlignTop))
+        self.pgv = _PackGridView()
+        self.layout().addWidget(self.pgv)
+
+        buttons = QWidget()
+        buttons.setLayout(QHBoxLayout())
+        buttons.layout().setAlignment(Qt.AlignRight)
+        buttons.layout().addStretch()
+        buttons.setContentsMargins(20, 20, 20, 20)
+
+        add = QPushButton()
+        add.setText("New")
+        add.clicked.connect(self.add_page)
+        add.setFont(gui.generate_font(11, QFont.Medium))
+        add.setFixedSize(100, 30)
+        buttons.layout().addWidget(add)
+
+        re = QPushButton()
+        re.setText("Refresh")
+        re.clicked.connect(self.refresh)
+        re.setFont(gui.generate_font(11, QFont.Medium))
+        re.setFixedSize(100, 30)
+        buttons.layout().addWidget(re)
+
+        self.layout().addWidget(buttons)
+
+    def add_page(self):
+        print("I haven't implemented this oops")
+        pass
+
+    @asyncSlot()
+    async def refresh(self):
+        await stickers.update_owned_packs()
+        await self.pgv.show_info()
+
+
+class _PackWidget(ClickWidget):
     def __init__(self, pack: TgStickerPack):
         super().__init__()
         self.clicked.connect(lambda: print(pack.sn))
@@ -46,7 +94,7 @@ class PackWidget(ClickWidget):
         self.layout().setSpacing(2)
 
 
-class PackGridView(QWidget):
+class _PackGridView(QWidget):
     def __init__(self):
         super().__init__()
         self.setLayout(QVBoxLayout())
@@ -76,59 +124,11 @@ class PackGridView(QWidget):
             self.layout().addWidget(gui.basic_label("You don't have any Sticker Packs\n"
                                                     "Press Refresh to sync your packs from Telegram or Add to create a "
                                                     "new pack!",
-                                                    font=gui.generate_font(QLabel(), 12)))
+                                                    font=gui.generate_font(12)))
         else:
             debug("getting packs and adding to gridview")
             packs: list[TgStickerPack] = [await stickers.get_pack(s) for s in sns]
-            self.gv.set_contents([PackWidget(tgs) for tgs in packs])
+            self.gv.set_contents([_PackWidget(tgs) for tgs in packs])
             debug("showing gridview...")
             self.clear_layout()
             self.layout().addWidget(self.gv)
-
-
-class HomePage(QWidget):
-    """
-    The main Homepage widget. Instantiate this one!!
-    """
-    def __init__(self, title: str = "Telegram Stickers"):
-        super().__init__()
-        self.setLayout(QVBoxLayout())
-        self.layout().setAlignment(Qt.AlignHCenter)
-
-        title = gui.basic_label(title, gui.generate_font(QLabel(), 32, QFont.Bold))
-        title.setContentsMargins(20, 20, 20, 20)
-
-        self.layout().addWidget(gui.nest_widget(title, Qt.AlignTop))
-        self.pgv = PackGridView()
-        self.layout().addWidget(self.pgv)
-
-        buttons = QWidget()
-        buttons.setLayout(QHBoxLayout())
-        buttons.layout().setAlignment(Qt.AlignRight)
-        buttons.layout().addStretch()
-        buttons.setContentsMargins(20, 20, 20, 20)
-
-        add = QPushButton()
-        add.setText("New")
-        add.clicked.connect(self.add_page)
-        add.setFont(gui.generate_font(add, 11, QFont.Medium))
-        add.setFixedSize(100, 30)
-        buttons.layout().addWidget(add)
-
-        re = QPushButton()
-        re.setText("Refresh")
-        re.clicked.connect(self.refresh)
-        re.setFont(gui.generate_font(re, 11, QFont.Medium))
-        re.setFixedSize(100, 30)
-        buttons.layout().addWidget(re)
-
-        self.layout().addWidget(buttons)
-
-    def add_page(self):
-        print("I haven't implemented this oops")
-        pass
-
-    @asyncSlot()
-    async def refresh(self):
-        await stickers.update_owned_packs()
-        await self.pgv.show_info()
