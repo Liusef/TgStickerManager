@@ -33,7 +33,8 @@ class HomePage(QWidget):
 
         self.layout().addWidget(gui.nest_widget(title, Qt.AlignTop))
         self.pgv = _PackGridView()
-        self.layout().addWidget(self.pgv)
+        self.layout().addWidget(nest := self.pgv)
+        nest.setStyleSheet("background-color: #24282c")
 
         buttons = QWidget()
         buttons.setLayout(QHBoxLayout())
@@ -67,14 +68,14 @@ class HomePage(QWidget):
         await self.pgv.show_info()
 
 
+from src.Qt.pages.base_sticker import BaseStickerPage
+
+
 class _PackWidget(ClickWidget):
     def __init__(self, pack: TgStickerPack):
         super().__init__()
-        self.clicked.connect(lambda: print(pack.sn))
-        fpath: str = (gvars.CACHEPATH + pack.sn + os.sep) + \
-                     ('thumb' if pack.thumb is not None else str(pack.stickers[0].doc_id)) + \
-                     ('.tgs' if pack.is_animated else '.webp')
-        thumb = gui.get_pixmap_from_file(fpath)
+        self.pack = pack
+        thumb = gui.get_pixmap_from_file(self.pack.get_thumb_path())
         tlabel = QLabel()
         tlabel.setScaledContents(True)
         tlabel.setFixedSize(80, 80)
@@ -93,20 +94,27 @@ class _PackWidget(ClickWidget):
         self.layout().setContentsMargins(2, 2, 2, 2)
         self.layout().setSpacing(2)
 
+        self.setStyleSheet('background-color: none')
+
+        self.clicked.connect(self.pack_page)
+
+    @asyncSlot()
+    async def pack_page(self):
+        self.parentWidget().parentWidget().parentWidget().parentWidget().layout().addWidget(Loading())
+        await asyncio.sleep(0.01)
+        self.parentWidget().parentWidget().parentWidget().parentWidget().parentWidget().parentWidget().\
+            setCentralWidget(BaseStickerPage(self.pack))
+
 
 class _PackGridView(QWidget):
     def __init__(self):
         super().__init__()
         self.setLayout(QVBoxLayout())
         self.layout().setAlignment(Qt.AlignCenter)
-        self.gv = GridView(4, 140, 140, False)
+        self.gv = GridView(5, 140, 140, False)
         self.loading = Loading()
-
-        @asyncSlot()
-        async def show_info():
-            await self.show_info()
-
-        show_info()
+        self.gv.setStyleSheet('border: none')
+        self.show_info()
 
     def clear_layout(self):
         self.loading.deleteLater()
@@ -114,6 +122,7 @@ class _PackGridView(QWidget):
         for i in range(self.layout().count()):
             self.layout().removeWidget(self.layout().itemAt(0).widget())
 
+    @asyncSlot()
     async def show_info(self):
         self.layout().addWidget(self.loading)
         sns: list[str] = await stickers.get_owned_packs()

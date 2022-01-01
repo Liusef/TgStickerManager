@@ -34,6 +34,7 @@ def get_pixmap_from_file(fpath: str) -> QPixmap:
     :return: A QPixMap containing the specified image
     """
     pixmap: QPixmap = QPixmap()
+    if fpath is None: return pixmap
     pixmap.load(fpath)
     return pixmap
 
@@ -120,7 +121,7 @@ def main():
     widget.setWindowIcon(QIcon(get_pixmap(assets, "app.png")))
     widget.setWindowTitle("PLACEHOLDER")
     widget.setCentralWidget(login.TgLoginWidget())
-    widget.resize(1000, 750)
+    widget.resize(900, 600)
 
     with QEventLoop(app) as loop:
         widget.show()

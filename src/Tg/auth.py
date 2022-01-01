@@ -137,7 +137,6 @@ async def signin_handler_code(phone: str, verif: str):
         raise NotImplementedError('User account needs 2nd factor to sign in. 2FA is not implemented in the GUI.')
 
 
-# TODO Look into the inputs that I need for the sign_in method, bc i might need all 3
 async def signin_handler_2fa(tfa: str):
     """
     Sends sign in request to telegram using 2FA password

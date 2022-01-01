@@ -31,7 +31,6 @@ def get_path_ext(path: str, fallback_ext: str = '') -> str:
     :param fallback_ext: The extension to use if the program fails to find the extension
     :return: The file extension
     """
-    # TODO Consider replacing some of the functionality by using MIME types
     i: int = path.rfind('.', 0, len(path))
     return path[i + 1:] if (i != -1) else fallback_ext
 
@@ -125,7 +124,6 @@ def get_attr_filename(f: Document, fallback: str = "") -> str:
     return attr.file_name
 
 
-# TODO Determine if this method is even necessary, logging is initialized in the gvars.py file
 def setup_logging(level: int, console: bool, file: bool, path: str = None):
     hnd = []
     hnd.append(logging.StreamHandler(sys.stdout)) if console else None

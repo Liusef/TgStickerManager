@@ -1,6 +1,6 @@
-from PySide6.QtGui import QMouseEvent
+from PySide6.QtGui import QMouseEvent, QEnterEvent
 from PySide6.QtWidgets import QWidget, QVBoxLayout
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, QEvent
 
 
 class ClickWidget(QWidget):
@@ -26,3 +26,11 @@ class ClickWidget(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(widget)
         self.setLayout(layout)
+
+
+class LitClickWidget(ClickWidget):
+    def enterEvent(self, event:QEnterEvent) -> None:
+        self.setStyleSheet('background-color: #283338')
+
+    def leaveEvent(self, event:QEvent) -> None:
+        self.setStyleSheet('background-color: none')

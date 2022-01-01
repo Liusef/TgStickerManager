@@ -1,5 +1,6 @@
 import asyncio
 import importlib.resources as ilr
+import copy
 from random import random
 from types import ModuleType
 from typing import Union
@@ -13,38 +14,11 @@ from PySide6.QtWidgets import QApplication, QWidget, QMainWindow, QVBoxLayout, Q
 
 from qasync import QEventLoop
 from src import assets
+from src.Qt import gui
 from src.Qt.GridView import GridView
-from src.Qt.ClickWidget import ClickWidget
-
-
-class CellWidget(QWidget):
-    def __init__(self, name: str, urmom: str):
-        super().__init__()
-        self.setLayout(QVBoxLayout())
-        self.layout().setAlignment(Qt.AlignCenter)
-        self.name = name
-
-        a = QLabel()
-        a.setText(name)
-        a.setAlignment(Qt.AlignCenter)
-        b = QLabel()
-        b.setText(urmom)
-        b.setAlignment(Qt.AlignCenter)
-        self.layout().addWidget(a)
-        self.layout().addWidget(b)
-
-
-def add(wid: GridView):
-    cw = CellWidget(f"Richard {wid.count()}", str(random()))
-    click = ClickWidget()
-    click.setCentralWidget(cw)
-    click.clicked.connect(lambda: print(f"hiya"))
-    wid.append(click)
-
-
-def delete(wid: GridView):
-    wid.delete(urmom := wid.count() - 1)
-    print(urmom)
+from src.Qt.ClickWidget import ClickWidget, LitClickWidget
+from src.Qt.pages.base_sticker import BaseStickerPage
+from src.Tg import stickers
 
 
 def main():
@@ -52,27 +26,65 @@ def main():
     app.setStyleSheet(ilr.read_text(assets, 'style.qss'))
     widget = QMainWindow()
     widget.setWindowTitle("PLACEHOLDER")
-    widget.setCentralWidget(nest := QWidget())
+    widget.setCentralWidget(nest := BaseStickerPage(stickers.deserialize_pack("KaiBlueRoo")))
     nest.setLayout(QVBoxLayout())
     nest.layout().setAlignment(Qt.AlignCenter)
 
-    gv = GridView(5)
-    n = QWidget()
-    n.setLayout(QVBoxLayout())
-    n.layout().setAlignment(Qt.AlignCenter)
-    n.layout().addWidget(gv)
+    butt = LitClickWidget()
+    butt.setLayout(QVBoxLayout())
+    butt.layout().addWidget(gui.basic_label("butt"))
+    butt.setFixedSize(100, 64)
+    butt.setContentsMargins(0, 0, 0, 0)
+    butt.clicked.connect(lambda: print('butt'))
 
-    add_button = QPushButton()
-    add_button.setText("Add")
-    add_button.clicked.connect(lambda: add(gv))
+    butt2 = LitClickWidget()
+    butt2.setLayout(QVBoxLayout())
+    butt2.layout().addWidget(gui.basic_label("richard"))
+    butt2.setFixedSize(100, 64)
+    butt2.setContentsMargins(0, 0, 0,0 )
+    butt2.clicked.connect(lambda: print('richard'))
 
-    delete_button = QPushButton()
-    delete_button.setText("Delete")
-    delete_button.clicked.connect(lambda: delete(gv))
+    butt3 = LitClickWidget()
+    butt3.setLayout(QVBoxLayout())
+    butt3.layout().addWidget(gui.basic_label("richard"))
+    butt3.setFixedSize(100, 64)
+    butt3.setContentsMargins(0, 0, 0,0 )
+    butt3.clicked.connect(lambda: print('richard'))
 
-    nest.layout().addWidget(n)
-    nest.layout().addWidget(add_button)
-    nest.layout().addWidget(delete_button)
+    butt4 = LitClickWidget()
+    butt4.setLayout(QVBoxLayout())
+    butt4.layout().addWidget(gui.basic_label("richard"))
+    butt4.setFixedSize(100, 64)
+    butt4.setContentsMargins(0, 0, 0,0 )
+    butt4.clicked.connect(lambda: print('richard'))
+
+    butt5 = LitClickWidget()
+    butt5.setLayout(QVBoxLayout())
+    butt5.layout().addWidget(gui.basic_label("richard"))
+    butt5.setFixedSize(100, 64)
+    butt5.setContentsMargins(0, 0, 0,0 )
+    butt5.clicked.connect(lambda: print('richard'))
+
+    butt6 = LitClickWidget()
+    butt6.setLayout(QVBoxLayout())
+    butt6.layout().addWidget(gui.basic_label("richard"))
+    butt6.setFixedSize(100, 64)
+    butt6.setContentsMargins(0, 0, 0,0 )
+    butt6.clicked.connect(lambda: print('richard'))
+
+    butt7 = LitClickWidget()
+    butt7.setLayout(QVBoxLayout())
+    butt7.layout().addWidget(gui.basic_label("richard"))
+    butt7.setFixedSize(100, 64)
+    butt7.setContentsMargins(0, 0, 0,0 )
+    butt7.clicked.connect(lambda: print('richard'))
+
+    nest.add_button(butt)
+    nest.add_button(butt2)
+    nest.add_button(butt3)
+    nest.add_button(butt4)
+    nest.add_button(butt5)
+    nest.add_button(butt6)
 
     widget.resize(900, 600)
 

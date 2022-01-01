@@ -25,6 +25,7 @@ QWidget
     selection-color: black;
     background-clip: border;
     outline: 0;
+    border-radius: 8px;
 }
 
 QWidget:item:hover
@@ -162,7 +163,7 @@ QAbstractItemView
 
 QWidget:focus, QMenuBar:focus
 {
-    /* border: 1px solid #78879b; */
+    border: 1px solid #78879b;
 }
 
 QTabWidget:focus, QCheckBox:focus, QRadioButton:focus, QSlider:focus
@@ -196,6 +197,7 @@ QGroupBox::title {
     padding-top: 10px;
 }
 
+
 QAbstractScrollArea
 {
     border-radius: 2px;
@@ -213,6 +215,7 @@ QScrollBar::left-arrow:horizontal, QScrollBar::right-arrow:horizontal, QScrollBa
     background: none;
     color: none;
 }
+
 
 QTextEdit
 {
@@ -657,7 +660,7 @@ QTableView
 {
     /* background-color: #201F1F; */
     background-color: transparent;
-    border: 0px;
+    border: none;
 }
 
 
@@ -666,6 +669,7 @@ QTableView, QHeaderView
     border-radius: 8px;
 }
 
+/*
 QTableView::item:pressed, QListView::item:pressed, QTreeView::item:pressed  {
     color: #FFFFFF;
 }
@@ -673,7 +677,7 @@ QTableView::item:pressed, QListView::item:pressed, QTreeView::item:pressed  {
 QTableView::item:selected:active, QTreeView::item:selected:active, QListView::item:selected:active  {
     color: #FFFFFF;
 }
-
+*/
 
 QHeaderView
 {

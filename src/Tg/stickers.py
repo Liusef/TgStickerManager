@@ -47,6 +47,17 @@ class TgSticker:
             '0'
         )
 
+    def get_file_path(self) -> str | None:
+        """
+        Gets the local file path of the sticker image on the system.
+        :return: The string file path of the sticker image. If not found, returns None
+        """
+        path: str = gvars.CACHEPATH + self.parent_sn + os.sep + str(self.doc_id)
+        print(path)
+        if os.path.exists(path + '.webp'): return path + '.webp'
+        elif os.path.exists(path + '.tgs'): return path + '.tgs'
+        else: return None
+
 
 class TgPackThumb:
     """
@@ -129,6 +140,17 @@ class TgStickerPack:
                 InputStickerSetThumb(InputStickerSetShortName(self.sn), self.thumb.version),
                 gvars.CACHEPATH + self.sn + os.sep + 'thumb.' + ('tgs' if self.is_animated else 'webp')
             )
+
+    def get_thumb_path(self) -> str | None:
+        """
+        Gets the local file location of the thumbnail of the pack. If no such file exists, the method returns None
+        :return: The relative string path of the thumbnail of the pack. Returns None if the file doesn't exist.
+        """
+        fpath: str = (gvars.CACHEPATH + self.sn + os.sep) + \
+                     ('thumb' if self.thumb is not None else str(self.stickers[0].doc_id)) + \
+                     ('.tgs' if self.is_animated else '.webp')
+        if not os.path.exists(fpath): return None
+        return fpath
 
     async def update_meta(self):
         """
