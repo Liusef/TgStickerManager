@@ -115,6 +115,7 @@ class _PackGridView(QWidget):
         self.loading = Loading()
         self.gv.setStyleSheet('border: none')
         self.show_info()
+        self.setStyleSheet('background-color: #24282c')
 
     def clear_layout(self):
         self.loading.deleteLater()
