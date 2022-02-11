@@ -1,4 +1,7 @@
 # TgStickerManager
+This project is no longer maintained. No preview or release versions will be made.
+To see the .NET version of the app that is still being updated go to [this repository](https://github.com/Liusef/TelegramStickerManager).
+
 A program to deal with @stickers on telegram so you don't have to
 
 # A Stupid Abstract Issue that I cannot explain
